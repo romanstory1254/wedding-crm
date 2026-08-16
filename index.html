@@ -326,6 +326,15 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
             </div>
             <div style="margin-top:8px;font-size:13.5px;line-height:1.65;font-weight:500">{{ fomo.body }}</div>
           </div>
+          <sc-if value="{{ fomo.extra }}" hint-placeholder-val="{{ false }}">
+            <div style="{{ fomo.extra.style }}">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="{{ fomo.extra.dotStyle }}"></span>
+                <span style="font-size:14.5px;font-weight:700;letter-spacing:-.02em">{{ fomo.extra.title }}</span>
+              </div>
+              <div style="margin-top:8px;font-size:13.5px;line-height:1.65;font-weight:500">{{ fomo.extra.body }}</div>
+            </div>
+          </sc-if>
         </sc-if>
 
         <div style="margin-top:24px">
@@ -1890,9 +1899,10 @@ class Component extends DCLogic {
       } else if (left <= 2) {
         Object.assign(fomo, { show: true, title: `${mNum}월 마감 임박`, body: `${mNum}월은 예약이 거의 마감되었어요. 계약금 입금 순으로 확정됩니다.`, style: box('#fff8e6', '#a86a00'), dotStyle: dot('#f5a623') });
       } else if (c.peakMonths.includes(mNum)) {
-        Object.assign(fomo, { show: true, title: '⚠️ 예약 집중 골든 시즌 마감 주의!', body: `선택하신 날짜는 본식 예약이 매우 집중되는 성수기입니다. 로맨스토리는 퀄리티 보존을 위해 월 ${this.limit()}팀 한정 예약 받으므로 선착순 마감에 유의해 주세요.`, style: box('#fff8e6', '#a86a00'), dotStyle: dot('#f5a623') });
+        Object.assign(fomo, { show: true, title: '✅ 예약 가능한 일정입니다!', body: `${this.fmtDate(b.date)} 현재 예약 선착순 빈자리로 등록되어있습니다.`, style: box('#e9f9ee', '#1a8a4c'), dotStyle: dot('#1a8a4c'),
+          extra: { title: '⚠️ 예약 집중 골든 시즌 마감 주의!', body: `선택하신 날짜는 본식 예약이 매우 집중되는 성수기입니다. 로맨스토리는 퀄리티 보존을 위해 월 ${this.limit()}팀 한정 예약 받으므로 선착순 마감에 유의해 주세요.`, style: box('#fff8e6', '#a86a00'), dotStyle: dot('#f5a623') } });
       } else {
-        Object.assign(fomo, { show: true, title: '✅ 예약 가능한 일정입니다!', body: '현재 예약 선착순 빈자리로 등록되어있습니다. 다른 예비 부부들의 예약 마감 전 신청을 권장합니다.', style: box('#e9f9ee', '#1a8a4c'), dotStyle: dot('#1a8a4c') });
+        Object.assign(fomo, { show: true, title: '✅ 예약 가능한 일정입니다!', body: '현재 예약 선착순 빈자리로 등록되어있습니다. 다른 분들의 예약 마감 전 신청을 권장합니다.', style: box('#e9f9ee', '#1a8a4c'), dotStyle: dot('#1a8a4c') });
       }
     }
     v.fomo = fomo;
@@ -1913,7 +1923,7 @@ class Component extends DCLogic {
         venue: b.venue, travel: b.travel, pkgId: pick.id, pkgName: pick.name,
         options: b.options, sns: b.sns, amount: total, source: b.source, memo: b.memo, snapStudio: b.snapStudio
       }).then(() => {
-        this.setState({ submitted: true, formTouched: false, booking: { ...b, groom: '', bride: '', phone: '', venue: '', memo: '' } });
+        this.setState({ submitted: true, formTouched: false });
         try { localStorage.removeItem('rs_booking_draft'); } catch (e) {}
         this.toast('문의가 접수되었어요 — 곧 연락드릴게요');
         this.refreshPublic();
