@@ -1713,12 +1713,25 @@ class Component extends DCLogic {
       const shoot = (p.shoot && p.shoot.length) ? p.shoot
         : (p.extraShoot && p.extraShoot.length) ? p.extraShoot
         : (p.items || []).slice(0, 1);
-      const edit = (p.edit && p.edit.length) ? p.edit
+      let edit = (p.edit && p.edit.length) ? p.edit
         : (p.extraEdit && p.extraEdit.length) ? p.extraEdit
         : legacyRest;
+      let shoot2 = shoot.slice();
+      // normalize: drone always in 촬영, never 편집물
+      edit = edit.filter(x => {
+        if (/드론/.test(x)) { if (!shoot2.some(s => /드론/.test(s))) shoot2.push('드론 촬영 (인트로)'); return false; }
+        return true;
+      });
+      shoot2 = shoot2.map(x => /드론/.test(x) && !/인트로/.test(x) ? '드론 촬영 (인트로)' : x);
+      // prestige always shows the highlight line like signature
+      if (p.id === 'prestige' && !edit.some(x => /하이라이트/.test(x))) {
+        const ci = edit.findIndex(x => /챕터별 풀영상/.test(x));
+        const hi = '하이라이트 3~5분 · 시네마틱 색보정';
+        edit = ci >= 0 ? [...edit.slice(0, ci + 1), hi, ...edit.slice(ci + 1)] : [...edit, hi];
+      }
       return {
         tier: p.tier, name: p.name,
-        shoot, edit, badge, note,
+        shoot: shoot2, edit, badge, note,
         plus: p.plus || (p.id === 'signature' ? '짐벌 촬영 포함' : ''),
         priceText: this.krw(b.sns ? p.price - p.sns : p.price),
         snsText: b.sns ? `SNS 동의 할인 ${this.krw(p.sns)} 적용됨` : `SNS 동의 시 ${this.krw(p.sns)} 할인`,
