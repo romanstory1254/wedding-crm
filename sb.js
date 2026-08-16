@@ -328,7 +328,7 @@ export async function submitInquiry(b, slug) {
     p_venue: b.venue || null, p_region: b.travel || null,
     p_package_id: b.pkgId || null, p_package_name: b.pkgName || null,
     p_options: b.options || [], p_sns: !!b.sns, p_amount: b.amount || 0,
-    p_source: b.source || null, p_memo: b.memo || null
+    p_source: b.source || null, p_memo: [b.snapStudio ? `동행 스냅업체: ${b.snapStudio}` : '', b.memo || ''].filter(Boolean).join('\n')
   };
   return rpcCompat('submit_inquiry', Object.assign({ p_slug: slug || currentSlug() }, core), core);
 }
