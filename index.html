@@ -17,24 +17,28 @@ body{margin:0;background:#f2f4f6;color:#191f28;font-family:Pretendard,-apple-sys
 @keyframes rsDrift{0%{transform:translate3d(-4%,-2%,0) scale(1.05)}50%{transform:translate3d(5%,3%,0) scale(1.18)}100%{transform:translate3d(-4%,-2%,0) scale(1.05)}}
 @keyframes rsDrift2{0%{transform:translate3d(6%,4%,0) scale(1.12)}50%{transform:translate3d(-5%,-4%,0) scale(1.02)}100%{transform:translate3d(6%,4%,0) scale(1.12)}}
 @keyframes rsTwinkle{0%,100%{opacity:.5}50%{opacity:.85}}
-html.sky,html.sky body{background:#08080f!important;color:#e8e6f0!important}
+html.sky,html.sky body{background:radial-gradient(120% 100% at 50% 0%,#0d0d1c 0%,#08080f 60%)!important;color:#e8e6f0!important}
 html.sky body::before,html.sky body::after{content:'';position:fixed;inset:-25%;z-index:0;pointer-events:none;will-change:transform}
 html.sky body::before{background:
- radial-gradient(40% 32% at 16% 12%,rgba(232,96,32,.34),transparent 70%),
- radial-gradient(34% 28% at 82% 8%,rgba(58,74,140,.42),transparent 70%),
- radial-gradient(46% 36% at 62% 78%,rgba(120,52,88,.34),transparent 72%);
- filter:blur(76px);animation:rsDrift 40s ease-in-out infinite}
+ radial-gradient(40% 32% at 16% 12%,rgba(232,96,32,.3),transparent 70%),
+ radial-gradient(36% 30% at 82% 8%,rgba(72,88,168,.4),transparent 70%),
+ radial-gradient(48% 38% at 62% 78%,rgba(134,58,102,.32),transparent 72%);
+ filter:blur(82px);animation:rsDrift 46s ease-in-out infinite}
 html.sky body::after{background:
- radial-gradient(30% 24% at 88% 56%,rgba(224,104,40,.24),transparent 70%),
- radial-gradient(34% 28% at 4% 66%,rgba(40,52,110,.44),transparent 72%),
- radial-gradient(24% 20% at 48% 32%,rgba(255,178,110,.12),transparent 74%);
- filter:blur(96px);animation:rsDrift2 54s ease-in-out infinite}
-html.sky .rs-stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.62;animation:rsTwinkle 7s ease-in-out infinite;
+ radial-gradient(30% 24% at 88% 56%,rgba(224,104,40,.2),transparent 70%),
+ radial-gradient(38% 30% at 4% 66%,rgba(52,64,132,.4),transparent 72%),
+ radial-gradient(26% 22% at 48% 32%,rgba(178,140,255,.1),transparent 74%);
+ filter:blur(100px);animation:rsDrift2 60s ease-in-out infinite}
+html.sky .rs-stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.8;animation:rsTwinkle 8s ease-in-out infinite;
  background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff,transparent),radial-gradient(1.2px 1.2px at 68% 14%,rgba(255,255,255,.9),transparent),
  radial-gradient(1.7px 1.7px at 38% 62%,#fff,transparent),radial-gradient(1.1px 1.1px at 88% 78%,rgba(255,255,255,.85),transparent),
  radial-gradient(1.4px 1.4px at 24% 86%,rgba(255,255,255,.9),transparent),radial-gradient(1.2px 1.2px at 55% 38%,rgba(255,255,255,.85),transparent),
  radial-gradient(1px 1px at 78% 44%,rgba(255,255,255,.8),transparent),radial-gradient(1.5px 1.5px at 6% 48%,#fff,transparent),
- radial-gradient(1.1px 1.1px at 44% 8%,rgba(255,255,255,.8),transparent),radial-gradient(1.3px 1.3px at 92% 26%,rgba(255,255,255,.85),transparent)}
+ radial-gradient(1.1px 1.1px at 44% 8%,rgba(255,255,255,.8),transparent),radial-gradient(1.3px 1.3px at 92% 26%,rgba(255,255,255,.85),transparent),
+ radial-gradient(1.3px 1.3px at 30% 30%,#fff,transparent),radial-gradient(1px 1px at 60% 60%,rgba(255,255,255,.85),transparent),
+ radial-gradient(1.6px 1.6px at 15% 70%,#fff,transparent),radial-gradient(1.1px 1.1px at 95% 45%,rgba(255,255,255,.8),transparent),
+ radial-gradient(1.2px 1.2px at 50% 90%,#fff,transparent),radial-gradient(1.4px 1.4px at 70% 5%,rgba(255,255,255,.9),transparent),
+ radial-gradient(1px 1px at 8% 10%,rgba(255,255,255,.75),transparent),radial-gradient(1.3px 1.3px at 82% 92%,#fff,transparent)}
 html.sky .rs-shell{position:relative;z-index:1;background:transparent!important}
 html.sky .r-pg{position:relative;z-index:1}
 html.sky .rs-topbar{background:rgba(10,10,20,.68)!important;border-bottom:1px solid rgba(150,150,200,.14)!important;backdrop-filter:blur(20px) saturate(140%)!important;color:#e8e6f0!important}
@@ -173,11 +177,12 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
 
 <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
 <sc-if value="{{ showBanner }}" hint-placeholder-val="{{ false }}">
-  <div class="rs-evt">
+  <div class="rs-evt" style="{{ evtSwipeStyle }}" onTouchStart="{{ evtTouchStart }}" onTouchMove="{{ evtTouchMove }}" onTouchEnd="{{ evtTouchEnd }}">
     <button type="button" class="rs-evt-x" onClick="{{ dismissBanner }}" aria-label="닫기">×</button>
     <div class="rs-evt-kicker">Open Event</div>
     <div class="rs-evt-body">{{ config.eventBanner }}</div>
     <button type="button" class="rs-evt-cta" onClick="{{ goBookingFromBanner }}">예약 문의하기</button>
+    <div style="margin-top:8px;font-size:11px;font-weight:500;color:rgba(60,40,28,.42);text-align:center">옆으로 넘겨서 닫기</div>
   </div>
 </sc-if>
 <div class="r-pg" style="max-width:1120px;margin:0 auto;padding:0 20px 80px">
@@ -214,11 +219,6 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
         </sc-for>
       </div>
     </div>
-  </div>
-
-  <div class="t-card rs-rev" style="margin-top:20px;padding:40px 32px">
-    <div style="font-size:13px;font-weight:700;color:#3182f6">Philosophy</div><p style="margin:16px 0 0;max-width:62ch;font-size:clamp(16px,3.6vw,21px);line-height:1.7;font-weight:600;letter-spacing:-.02em;white-space:pre-line;text-wrap:pretty">{{ config.philosophy }}</p>
-    
   </div>
 
   <div class="rs-rev" style="margin-top:36px">
@@ -370,15 +370,23 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
 
         <div style="margin-top:20px;padding:20px;border-radius:16px;background:#fffbe6">
           <div style="font-size:14.5px;font-weight:800;letter-spacing:-.02em">상담은 카카오톡이 가장 빨라요</div>
-          <div style="margin-top:6px;font-size:13.5px;line-height:1.65;font-weight:500;color:#6b7684">폼을 남겨주시면 순차적으로 연락드리지만, 날짜가 급하시거나 궁금한 점이 많다면 카톡 채널로 바로 물어보세요. 예식 일정 가능 여부를 그 자리에서 확인해 드립니다.</div>
-          <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" style="width:100%;margin-top:14px;background:#fee500;color:#191600;text-decoration:none">카카오톡 채널로 상담하기</a>
+          <div style="margin-top:6px;font-size:13.5px;line-height:1.65;font-weight:500;color:#6b7684">폼을 남겨주시면 순차적으로 연락드리지만, 날짜가 급하시거나 궁금한 점이 많다면 카톡 채널로 바로 물어보세요. 카톡 채널에 메시지를 남겨주시면 카톡으로 연락드릴게요.</div>
+          <div style="margin-top:12px;padding:12px 14px;background:rgba(255,255,255,.6);border-radius:12px;font-size:12.5px;line-height:1.6;font-weight:500;color:#6b7684;white-space:pre-line">{{ kakaoMsg }}</div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button type="button" class="t-btn t-sec" onClick="{{ copyKakaoMsg }}" style="flex:1">문구 복사</button>
+            <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" style="flex:1;background:#fee500;color:#191600;text-decoration:none">카톡 채널 열기</a>
+          </div>
         </div>
 
         <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px;padding:18px 20px;border-radius:16px;background:#e8f3ff">
             <div style="font-size:14.5px;font-weight:800;color:#1b64da">문의가 접수되었어요</div>
-            <div style="margin-top:6px;font-size:13.5px;line-height:1.65;font-weight:500;color:#1b64da">카톡으로 상담을 이어가면 예약금 안내까지 한 번에 끝낼 수 있어요.</div>
-            <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" style="width:100%;margin-top:12px;background:#fee500;color:#191600;text-decoration:none">카톡으로 상담 이어가기</a>
+            <div style="margin-top:6px;font-size:13.5px;line-height:1.65;font-weight:500;color:#1b64da">아래 문구를 복사해서 카톡 채널에 메시지를 남겨주시면 카톡으로 연락드릴게요.</div>
+            <div style="margin-top:10px;padding:12px 14px;background:rgba(255,255,255,.7);border-radius:12px;font-size:12.5px;line-height:1.6;font-weight:500;color:#1b64da;white-space:pre-line">{{ kakaoMsg }}</div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button type="button" class="t-btn t-sec" onClick="{{ copyKakaoMsg }}" style="flex:1">문구 복사</button>
+              <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" style="flex:1;background:#fee500;color:#191600;text-decoration:none">카톡 채널 열기</a>
+            </div>
           </div>
         </sc-if>
       </div>
@@ -1321,7 +1329,7 @@ class Component extends DCLogic {
     contractId: null,
     contractDraft: null,
     toasts: [],
-    booking: { groom: '', bride: '', phone: '', date: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' },
+    booking: (() => { try { const saved = JSON.parse(localStorage.getItem('rs_booking_draft') || 'null'); return saved && typeof saved === 'object' ? { groom: '', bride: '', phone: '', date: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '', ...saved } : { groom: '', bride: '', phone: '', date: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' }; } catch (e) { return { groom: '', bride: '', phone: '', date: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' }; } })(),
     formTouched: false,
     submitted: false,
     authed: false, adminEmail: '', loginForm: { email: '', password: '' }, loginError: '', loggingIn: false,
@@ -1344,8 +1352,7 @@ class Component extends DCLogic {
       heroTitle: '모든 사랑에는\n저마다의 서사가 있다.',
       heroSub: '상담부터 촬영, 편집까지 대표가 직접 진행합니다. 알바나 외주 인력을 일체 쓰지 않고, 전 상품 4K 촬영으로 진행해 촬영일 기준 1개월 이내에 USB로 보내드려요.',
       eventBanner: '🎁 오픈 이벤트 — 시그니처·프레스티지 예약 시 프리웨딩 촬영 + 하이라이트 편집본 무료 (~2026.08.31 예약일 기준)',
-      philosophy: '로맨스토리는 공장처럼 찍어내지 않습니다.  1인 대표가 모든 과정을 책임지고 담당하며, \n한 달에 오직 8개의 예식만 받고, 사전에 식순과 동선을 함께 맞춘 뒤 촬영에 들어갑니다.',
-      notice: '· 예약금 10만원 입금 시 예약 확정 (선착순 · 입금 시점 기준)\n· 잔금은 예식일 1주일 전까지\n· 촬영일 기준 1개월 이내 USB 택배 발송\n· 원본은 납품 후 1개월 보관 후 순차 삭제 — 꼭 백업해 주세요\n· 스냅 업체와 동행 촬영에 한해 진행 (영상 단독 촬영 불가)\n· 수도권 출장비 무료 / 충청·강원 7~10만 · 경상·전라 15~20만 · 제주 협의',
+      philosophy: '두 분이 보지 못하는 곳의 진짜 비하인드.\n대기실과 홀에 계시느라 놓치기 쉬운 하객분들의 진짜 표정을, 포토테이블에 숨겨진 무인캠으로 담아드립니다.\n베이직·시그니처·프레스티지 전 상품에 추가 비용 없이 기본 제공돼요.',      notice: '· 예약금 10만원 입금 시 예약 확정 (선착순 · 입금 시점 기준)\n· 잔금은 예식일 1주일 전까지\n· 촬영일 기준 1개월 이내 USB 택배 발송\n· 원본은 납품 후 1개월 보관 후 순차 삭제 — 꼭 백업해 주세요\n· 스냅 업체와 동행 촬영에 한해 진행 (영상 단독 촬영 불가)\n· 수도권 출장비 무료 / 충청·강원 7~10만 · 경상·전라 15~20만 · 제주 협의',
       reviews: [
         { body: '진짜 업체 열 군데는 비교했어요ㅎㅎ 근데 여기가 대표님이 직접 다 하신다고 해서 믿고 맡겼는데 정말 잘한 선택이었어요 👍 당일에 어디 계신지도 모를 만큼 조용히 다니시더니 놓친 장면이 하나도 없더라구요.. 엄마가 영상 보다가 우셨어요 🥹', meta: '2025.09 · 고려대학교 교우회관' },
         { body: '저희 홀 진짜 어두워서 영상 망하면 어쩌지 걱정 엄청 했는데요, 완성본 받고 좀 놀랐어요 😮 색감이 그냥 찍은 느낌이 아니라 영화 같아요! 하이라이트는 저장해두고 몇 번 봤는지 모르겠어요ㅎㅎ', meta: '2025.11 · 잠실 더 베네치아' },
@@ -1438,7 +1445,12 @@ class Component extends DCLogic {
     const home = this.state.appMode === 'home';
     document.documentElement.classList.toggle('sky', home);
   };
-  componentDidUpdate() { this.syncSky(); this.queueScan(); this.measureDoc(); }
+  componentDidUpdate(pp, ps) {
+    this.syncSky(); this.queueScan(); this.measureDoc();
+    if (ps.booking !== this.state.booking) {
+      try { localStorage.setItem('rs_booking_draft', JSON.stringify(this.state.booking)); } catch (e) {}
+    }
+  }
   componentDidMount() {
     window.addEventListener('resize', this.measureDoc); this.measureDoc();
     this.syncSky();
@@ -1624,6 +1636,19 @@ class Component extends DCLogic {
     });
     v.showBanner = (this.props.showEventBanner ?? true) && !!c.eventBanner && !s.bannerClosed;
     v.dismissBanner = () => { this.setState({ bannerClosed: true }); try { sessionStorage.setItem('rs_evt_closed', '1'); } catch (e) {} };
+    const dx = s.evtSwipeDx || 0;
+    v.evtSwipeStyle = dx ? `transform:translateX(${dx}px);opacity:${Math.max(0, 1 - Math.abs(dx) / 160)};transition:none` : '';
+    v.evtTouchStart = e => { this._evtX0 = e.touches[0].clientX; };
+    v.evtTouchMove = e => {
+      if (this._evtX0 == null) return;
+      this.setState({ evtSwipeDx: e.touches[0].clientX - this._evtX0 });
+    };
+    v.evtTouchEnd = () => {
+      const d = this.state.evtSwipeDx || 0;
+      this._evtX0 = null;
+      if (Math.abs(d) > 80) { v.dismissBanner(); this.setState({ evtSwipeDx: 0 }); }
+      else this.setState({ evtSwipeDx: 0 });
+    };
     v.goBookingFromBanner = () => { v.dismissBanner(); const el = document.getElementById('booking'); if (el) window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' }); };
     v.setupWarn = s.noStudio
       ? `'${(this.sb && this.sb.currentSlug && this.sb.currentSlug()) || 'romancestory'}' 스튜디오를 찾을 수 없습니다. 주소의 ?studio= 값을 확인하거나 관리자 로그인 후 발급된 주소를 사용해 주세요.`
@@ -1704,6 +1729,21 @@ class Component extends DCLogic {
 
     const b = s.booking; v.booking = b;
     const pick = c.packages.find(p => p.id === b.pkg) || c.packages[0];
+    const kNames = [b.groom, b.bride].filter(Boolean).join('·') || '신랑신부';
+    const kDate = b.date ? this.fmtDate(b.date) : '예식일 미정';
+    const kLines = [
+      `안녕하세요, 홈페이지에서 예약 문의 남긴 ${kNames}입니다.`,
+      `- 예식일: ${kDate}`,
+      b.venue ? `- 예식 장소: ${b.venue}` : '',
+      `- 패키지: ${pick.name}`,
+      b.travel ? `- 출장 지역: ${(c.travelZones.find(z => z.id === b.travel) || {}).name || b.travel}` : '',
+      b.options.length ? `- 추가 옵션: ${b.options.map(id => (c.options.find(o => o.id === id) || {}).name).filter(Boolean).join(', ')}` : '',
+      b.snapStudio ? `- 동행 스냅업체: ${b.snapStudio}` : '',
+      b.memo ? `- 요청사항: ${b.memo}` : '',
+      '확인 부탁드립니다!'
+    ].filter(Boolean);
+    v.kakaoMsg = kLines.join('\n');
+    v.copyKakaoMsg = () => { this.copy(v.kakaoMsg); this.toast('문구를 복사했어요 — 카톡에 붙여넣어 주세요'); };
     const COMMON = ['하객·부모님 축하 영상 + 포토테이블 무인캠', '신부대기실 1시간 전 ~ 원판 종료'];
     const remap = x => /^본식 FULL/.test(x) ? '신부대기실 · 본식 · 원판촬영 챕터별 풀영상 제공' : x;
     v.packageCards = c.packages.map(p => {
@@ -1833,6 +1873,7 @@ class Component extends DCLogic {
         options: b.options, sns: b.sns, amount: total, source: b.source, memo: b.memo, snapStudio: b.snapStudio
       }).then(() => {
         this.setState({ submitted: true, formTouched: false, booking: { ...b, groom: '', bride: '', phone: '', venue: '', memo: '' } });
+        try { localStorage.removeItem('rs_booking_draft'); } catch (e) {}
         this.toast('문의가 접수되었어요 — 곧 연락드릴게요');
         this.refreshPublic();
         if (s.authed) this.refreshProjects();
