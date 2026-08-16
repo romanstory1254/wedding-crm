@@ -443,6 +443,17 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
       <div>사업자등록번호 · 891-62-00670</div>
       <div>서울 · 수도권 웨딩 영상 제작</div>
     </div>
+    <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px">
+      <sc-for list="{{ footerLinks }}" as="fl" hint-placeholder-count="5">
+        <a href="{{ fl.href }}" target="{{ fl.target }}" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:11px;background:#f2f4f6;font-size:12.5px;font-weight:700;color:#4e5968;text-decoration:none">
+          <svg width="15" height="15" viewBox="{{ fl.viewBox }}" aria-hidden="true" style="flex:none" fill="{{ fl.svgFill }}" stroke="{{ fl.stroke }}" strokeWidth="{{ fl.strokeWidth }}">
+            <sc-for list="{{ fl.paths }}" as="pd" hint-placeholder-count="1">
+              <path d="{{ pd }}"></path>
+            </sc-for>
+          </svg>{{ fl.label }}
+        </a>
+      </sc-for>
+    </div>
     <div style="margin-top:16px;font-size:12px;font-weight:500;color:#b0b8c1">© 2026 ROMANSTORY. All rights reserved.</div>
   </div>
 </div>
@@ -1005,11 +1016,25 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
           <div><span class="t-lb">예약 안내 사항</span><textarea class="t-in" value="{{ config.notice }}" onChange="{{ cms.notice }}"></textarea></div>
         </div>
         <div class="t-card" style="margin-top:16px;padding:28px">
-          <div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px">포트폴리오 영상</div>
+          <div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px">푸터 링크</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+            <div><span class="t-lb">인스타그램</span><input class="t-in" value="{{ config.socialLinks.instagram }}" onChange="{{ setSocial.instagram }}" placeholder="https://instagram.com/..."></div>
+            <div><span class="t-lb">블로그</span><input class="t-in" value="{{ config.socialLinks.blog }}" onChange="{{ setSocial.blog }}" placeholder="https://blog.naver.com/..."></div>
+            <div><span class="t-lb">노션</span><input class="t-in" value="{{ config.socialLinks.notion }}" onChange="{{ setSocial.notion }}" placeholder="https://notion.so/..."></div>
+            <div><span class="t-lb">이메일</span><input class="t-in" value="{{ config.socialLinks.email }}" onChange="{{ setSocial.email }}" placeholder="studio@example.com"></div>
+            <div><span class="t-lb">전화번호</span><input class="t-in" value="{{ config.socialLinks.phone }}" onChange="{{ setSocial.phone }}" placeholder="010-0000-0000"></div>
+          </div>
+        </div>
+        <div class="t-card" style="margin-top:16px;padding:28px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size:15px;font-weight:700;letter-spacing:-.02em">포트폴리오 영상</div>
+            <button type="button" onClick="{{ addVideo }}" style="padding:8px 14px;border:0;border-radius:10px;background:#eef2ff;color:#3182f6;font-size:13px;font-weight:700;cursor:pointer">+ 영상 추가</button>
+          </div>
           <sc-for list="{{ videoRows }}" as="v" hint-placeholder-count="3">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px">
-              <input class="t-in" value="{{ v.title }}" onChange="{{ v.onTitle }}">
-              <input class="t-in" value="{{ v.url }}" onChange="{{ v.onUrl }}">
+            <div style="position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px;padding-right:36px">
+              <input class="t-in" value="{{ v.title }}" onChange="{{ v.onTitle }}" placeholder="영상 제목">
+              <input class="t-in" value="{{ v.url }}" onChange="{{ v.onUrl }}" placeholder="유튜브 링크">
+              <button type="button" onClick="{{ v.onRemove }}" style="position:absolute;top:4px;right:0;width:26px;height:26px;border:0;border-radius:999px;background:rgba(25,31,40,.08);color:#6b7684;font-size:14px;font-weight:700;cursor:pointer;line-height:1">×</button>
             </div>
           </sc-for>
         </div>
@@ -1413,6 +1438,7 @@ class Component extends DCLogic {
       payAccount: '하나은행 756-910345-81707',
       payHolder: '엄대웅 (로맨스토리)',
       kakaoUrl: 'http://pf.kakao.com/_xdzVyn/chat',
+      socialLinks: { instagram: 'https://www.instagram.com/romanstory_wedding', blog: '', notion: '', email: 'eodnd1254@naver.com', phone: '' },
       leadSources: ['네이버 블로그', '인스타그램', '지인 소개', '웨딩홀 추천', '카페·커뮤니티', '기타'],
       monthlyLimit: 8,
       peakMonths: [4, 5, 9, 10, 11],
@@ -1723,6 +1749,21 @@ class Component extends DCLogic {
     v.copyPublicUrl = () => { this.copy(v.publicUrl); this.toast('홈페이지 주소를 복사했어요'); };
     v.goPay = () => this.setState({ appMode: 'pay' });
     v.kakaoUrl = c.kakaoUrl;
+    const sl = c.socialLinks || {};
+    const ICONS = {
+      instagram: { viewBox: '0 0 16 16', svgFill: '#E4405F', stroke: 'none', strokeWidth: 0, paths: ['M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334'] },
+      blog: { viewBox: '0 0 24 24', svgFill: '#03C75A', stroke: 'none', strokeWidth: 0, paths: ['M1.6 0S0 0 0 1.6v20.8S0 24 1.6 24h20.8s1.6 0 1.6-1.6V1.6S24 0 22.4 0zm3.415 5.6h4.78l4.425 6.458V5.6h4.765v12.8h-4.78L9.78 11.943V18.4H5.015Z'] },
+      notion: { viewBox: '0 0 24 24', svgFill: 'none', stroke: '#191f28', strokeWidth: 2, paths: ['M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'M7 7h3l6 6', 'M8 7v10', 'M7 17h2', 'M15 7h2', 'M16 7v10h-1l-7-7'] },
+      email: { viewBox: '0 0 24 24', svgFill: '#6b7684', stroke: 'none', strokeWidth: 0, paths: ['M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v.01L12 12l8-5.99V6H4zm0 2.24V18h16V8.24l-8 6-8-6z'] },
+      phone: { viewBox: '0 0 24 24', svgFill: '#6b7684', stroke: 'none', strokeWidth: 0, paths: ['M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.4 21 3 13.6 3 4.5a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2z'] }
+    };
+    v.footerLinks = [
+      sl.instagram ? { label: 'Instagram', href: sl.instagram, target: '_blank', ...ICONS.instagram } : null,
+      sl.blog ? { label: 'Blog', href: sl.blog, target: '_blank', ...ICONS.blog } : null,
+      sl.notion ? { label: 'Notion', href: sl.notion, target: '_blank', ...ICONS.notion } : null,
+      sl.email ? { label: sl.email, href: `mailto:${sl.email}`, target: '_self', ...ICONS.email } : null,
+      sl.phone ? { label: sl.phone, href: `tel:${sl.phone.replace(/[^0-9+]/g, '')}`, target: '_self', ...ICONS.phone } : null
+    ].filter(Boolean);
     v.goBooking = () => { const el = document.getElementById('booking'); if (el) window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' }); };
     v.goClient = () => this.setState({ appMode: 'client' });
     v.heroStats = [{ value: '월 8편', label: '한정 예약' }, { value: '4K 촬영', label: '전 상품 기본' }, { value: '1개월', label: '이내 USB 납품' }];
@@ -2212,6 +2253,8 @@ class Component extends DCLogic {
     }));
 
     const bindCfg = k => e => this.setCfg(k, e.target.value);
+    const bindSocial = k => e => this.setCfg('socialLinks', { ...(c.socialLinks || {}), [k]: e.target.value });
+    v.setSocial = { instagram: bindSocial('instagram'), blog: bindSocial('blog'), notion: bindSocial('notion'), email: bindSocial('email'), phone: bindSocial('phone') };
     v.cms = { heroKicker: bindCfg('heroKicker'), heroTitle: bindCfg('heroTitle'), heroSub: bindCfg('heroSub'), eventBanner: bindCfg('eventBanner'), philosophy: bindCfg('philosophy'), notice: bindCfg('notice') };
     const heroGal = (c.gallery || []).map(g => (typeof g === 'string' ? { url: g, pos: 'center' } : { url: g.url, pos: g.pos || 'center' }));
     const heroSlides = heroGal.length ? heroGal : (c.heroPhoto ? [{ url: c.heroPhoto, pos: c.heroPos || 'center' }] : []);
@@ -2309,8 +2352,10 @@ class Component extends DCLogic {
     v.videoRows = c.videos.map((vid, i) => ({
       title: vid.title, url: vid.url,
       onTitle: e => this.setCfg('videos', c.videos.map((x, j) => j === i ? { ...x, title: e.target.value } : x)),
-      onUrl: e => this.setCfg('videos', c.videos.map((x, j) => j === i ? { ...x, url: e.target.value } : x))
+      onUrl: e => this.setCfg('videos', c.videos.map((x, j) => j === i ? { ...x, url: e.target.value } : x)),
+      onRemove: () => this.setCfg('videos', c.videos.filter((_, j) => j !== i))
     }));
+    v.addVideo = () => this.setCfg('videos', [...(c.videos || []), { title: '', url: '' }]);
     v.packageRows = c.packages.map((p, i) => ({
       name: p.name, price: p.price, sns: p.sns,
       onName: e => this.setCfg('packages', c.packages.map((x, j) => j === i ? { ...x, name: e.target.value } : x)),
@@ -2319,7 +2364,7 @@ class Component extends DCLogic {
     }));
     v.saveCms = () => {
       if (!this.sb || !s.authed) { this.toast('관리자 로그인이 필요해요', 'err'); return; }
-      const home = { heroKicker: c.heroKicker, heroTitle: c.heroTitle, heroSub: c.heroSub, heroPhoto: c.heroPhoto, heroPos: c.heroPos, gallery: c.gallery, eventBanner: c.eventBanner, philosophy: c.philosophy, notice: c.notice, kakaoUrl: c.kakaoUrl, payAccount: c.payAccount, payHolder: c.payHolder, videos: c.videos, diffs: c.diffs, reviews: c.reviews };
+      const home = { heroKicker: c.heroKicker, heroTitle: c.heroTitle, heroSub: c.heroSub, heroPhoto: c.heroPhoto, heroPos: c.heroPos, gallery: c.gallery, eventBanner: c.eventBanner, philosophy: c.philosophy, notice: c.notice, kakaoUrl: c.kakaoUrl, payAccount: c.payAccount, payHolder: c.payHolder, videos: c.videos, diffs: c.diffs, reviews: c.reviews, socialLinks: c.socialLinks };
       const price = { depositFixed: c.depositFixed, monthlyLimit: c.monthlyLimit, peakMonths: c.peakMonths, packages: c.packages, options: c.options, travelZones: c.travelZones };
       const sid = s.studio && s.studio.id;
       Promise.all([this.sb.saveSetting('homepage', home, sid), this.sb.saveSetting('pricing', price, sid)])
