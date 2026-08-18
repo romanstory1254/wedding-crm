@@ -315,6 +315,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
           <div><span class="t-lb">신부 성함 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.bride }}" value="{{ booking.bride }}" onChange="{{ setBookBride }}" placeholder="김서연"></div>
           <div><span class="t-lb">대표 연락처 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.phone }}" value="{{ booking.phone }}" onChange="{{ setBookPhone }}" placeholder="010-0000-0000"></div>
           <div><span class="t-lb">예식일 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.date }}" type="date" value="{{ booking.date }}" onChange="{{ setBookDate }}"></div>
+          <div><span class="t-lb">예식 시간</span><input class="t-in" type="time" value="{{ booking.time }}" onChange="{{ setBookTime }}"></div>
           <div><span class="t-lb">예식 장소 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.venue }}" value="{{ booking.venue }}" onChange="{{ setBookVenue }}" placeholder="서울 · 그랜드하얏트"></div>
         </div>
 
@@ -1370,7 +1371,7 @@ class Component extends DCLogic {
     contractId: null,
     contractDraft: null,
     toasts: [],
-    booking: (() => { try { const saved = JSON.parse(localStorage.getItem('rs_booking_draft') || 'null'); return saved && typeof saved === 'object' ? { groom: '', bride: '', phone: '', date: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '', ...saved } : { groom: '', bride: '', phone: '', date: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' }; } catch (e) { return { groom: '', bride: '', phone: '', date: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' }; } })(),
+    booking: (() => { try { const saved = JSON.parse(localStorage.getItem('rs_booking_draft') || 'null'); return saved && typeof saved === 'object' ? { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '', ...saved } : { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' }; } catch (e) { return { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' }; } })(),
     formTouched: false,
     submitted: false,
     authed: false, adminEmail: '', loginForm: { email: '', password: '' }, loginError: '', loggingIn: false,
@@ -1846,7 +1847,7 @@ class Component extends DCLogic {
     });
     const setB = k => e => this.setState({ booking: { ...b, [k]: e.target.value } });
     v.setBookGroom = setB('groom'); v.setBookBride = setB('bride');
-    v.setBookPhone = setB('phone'); v.setBookDate = setB('date');
+    v.setBookPhone = setB('phone'); v.setBookDate = setB('date'); v.setBookTime = setB('time');
     v.setBookVenue = setB('venue'); v.setBookMemo = setB('memo');
     v.toggleSns = () => this.setState({ booking: { ...b, sns: !b.sns } });
 
@@ -1926,7 +1927,7 @@ class Component extends DCLogic {
       }
       if (!this.sb) { this.toast('연결 준비 중이에요. 잠시 후 다시 시도해 주세요', 'err'); return; }
       this.sb.submitInquiry({
-        groom: b.groom.trim(), bride: b.bride.trim(), phone: b.phone, date: b.date,
+        groom: b.groom.trim(), bride: b.bride.trim(), phone: b.phone, date: b.date, time: b.time || null,
         venue: b.venue, travel: b.travel, pkgId: pick.id, pkgName: pick.name,
         options: b.options, sns: b.sns, amount: total, source: b.source, memo: b.memo, snapStudio: b.snapStudio
       }).then(() => {
