@@ -258,9 +258,9 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
 
 
   <div class="rs-rev" style="margin-top:36px">
-    <h2 style="margin:0 0 18px;font-size:clamp(19px,3vw,22px);font-weight:800;letter-spacing:-.03em">신부님들의 후기</h2>
+    <h2 style="margin:0 0 18px;font-size:clamp(19px,3vw,22px);font-weight:800;letter-spacing:-.03em">신부님들의 대표후기</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
-      <sc-for list="{{ reviewRows }}" as="r" hint-placeholder-count="4">
+      <sc-for list="{{ reviewRowsShown }}" as="r" hint-placeholder-count="2">
         <div class="t-card rs-lift" style="padding:24px">
           <div style="font-size:13px;letter-spacing:.06em;color:#ff9c5c">{{ r.stars }}</div>
           <p style="margin:14px 0 0;font-size:14px;line-height:1.78;font-weight:500;text-wrap:pretty">{{ r.body }}</p>
@@ -268,6 +268,9 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
         </div>
       </sc-for>
     </div>
+    <sc-if value="{{ reviewToggleShow }}" hint-placeholder-val="{{ true }}">
+      <button type="button" onClick="{{ toggleReviews }}" style="display:block;width:100%;margin-top:14px;padding:14px;border:1px solid rgba(150,150,200,.22);border-radius:14px;background:rgba(255,255,255,.04);font-size:13.5px;font-weight:700;color:#ff9c5c;cursor:pointer">{{ reviewToggleLabel }}</button>
+    </sc-if>
   </div>
   <div id="booking" class="r-split rs-rev" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:20px;margin-top:36px;align-items:start">
     <div>
@@ -315,7 +318,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
           <div><span class="t-lb">신부 성함 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.bride }}" value="{{ booking.bride }}" onChange="{{ setBookBride }}" placeholder="김서연"></div>
           <div><span class="t-lb">대표 연락처 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.phone }}" value="{{ booking.phone }}" onChange="{{ setBookPhone }}" placeholder="010-0000-0000"></div>
           <div><span class="t-lb">예식일 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.date }}" type="date" value="{{ booking.date }}" onChange="{{ setBookDate }}"></div>
-          <div><span class="t-lb">예식 시간</span><input class="t-in" type="time" value="{{ booking.time }}" onChange="{{ setBookTime }}"></div>
+          <div><span class="t-lb">예식 시간 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.time }}" type="time" value="{{ booking.time }}" onChange="{{ setBookTime }}"></div>
           <div><span class="t-lb">예식 장소 <span style="color:#f04452">*</span></span><input class="t-in" style="{{ errStyle.venue }}" value="{{ booking.venue }}" onChange="{{ setBookVenue }}" placeholder="서울 · 그랜드하얏트"></div>
         </div>
 
@@ -1651,6 +1654,10 @@ class Component extends DCLogic {
     v.statusList = this.STATUSES; v.editStageList = this.EDIT_STAGES; v.weekdays = this.WEEKDAYS;
     v.stop = e => e.stopPropagation();
     v.reviewRows = (c.reviews || []).map(r => ({ stars: '★★★★★', body: r.body, meta: r.meta }));
+    v.reviewRowsShown = s.reviewsOpen ? v.reviewRows : v.reviewRows.slice(0, 2);
+    v.reviewToggleShow = v.reviewRows.length > 2;
+    v.reviewToggleLabel = s.reviewsOpen ? '접기 ↑' : `후기 ${v.reviewRows.length - 2}개 더 보기 ↓`;
+    v.toggleReviews = () => this.setState(st => ({ reviewsOpen: !st.reviewsOpen }));
     v.reviewEditRows = (c.reviews || []).map((r, i) => ({
       body: r.body, meta: r.meta,
       onBody: e => this.setCfg('reviews', c.reviews.map((x, j) => j === i ? { ...x, body: e.target.value } : x)),
@@ -1863,11 +1870,12 @@ class Component extends DCLogic {
     if (!b.bride.trim()) missing.push('bride');
     if (!b.phone.trim()) missing.push('phone');
     if (!b.date) missing.push('date');
+    if (!b.time) missing.push('time');
     if (!b.venue.trim()) missing.push('venue');
     if (!zone) missing.push('travel');
     const showErr = k => s.formTouched && missing.includes(k);
     const errBorder = k => showErr(k) ? 'background:#fff0f1;border-color:#f04452' : '';
-    v.errStyle = { groom: errBorder('groom'), bride: errBorder('bride'), phone: errBorder('phone'), date: errBorder('date'), venue: errBorder('venue') };
+    v.errStyle = { groom: errBorder('groom'), bride: errBorder('bride'), phone: errBorder('phone'), date: errBorder('date'), time: errBorder('time'), venue: errBorder('venue') };
     v.setBookTravel = e => this.setState({ booking: { ...b, travel: e.target.value } });
     v.setBookSnap = e => this.setState({ booking: { ...b, snapStudio: e.target.value } });
     v.travelSelectStyle = `width:100%;min-height:52px;padding:0 16px;border:1px solid ${showErr('travel') ? '#f04452' : '#e5e8eb'};border-radius:14px;background:${showErr('travel') ? '#fff0f1' : '#fff'};cursor:pointer;font-size:14.5px;font-weight:700;font-family:Pretendard,-apple-system,system-ui,sans-serif;color:${zone ? '#191f28' : '#8b95a1'}`;
@@ -1877,10 +1885,13 @@ class Component extends DCLogic {
 
     const optSum = b.options.reduce((a, id) => a + (c.options.find(o => o.id === id) || { price: 0 }).price, 0);
     const discount = b.sns ? pick.sns : 0;
-    const total = pick.price - discount + optSum + (zone ? zone.price : 0);
+    const isSunday = !!b.date && new Date(b.date + 'T00:00:00').getDay() === 0;
+    const sunDiscount = isSunday ? 50000 : 0;
+    const total = pick.price - discount - sunDiscount + optSum + (zone ? zone.price : 0);
     v.quoteLines = [
       { label: `패키지 · ${pick.name}`, value: this.krw(pick.price), valStyle: 'font-size:14.5px;font-weight:700' },
       { label: 'SNS 동의 할인', value: discount ? '− ' + this.krw(discount) : '미적용', valStyle: `font-size:14.5px;font-weight:700;color:${discount ? this.BLUE : '#b0b8c1'}` },
+      { label: '일요일 예식 할인', value: sunDiscount ? '− ' + this.krw(sunDiscount) : '미적용', valStyle: `font-size:14.5px;font-weight:700;color:${sunDiscount ? this.BLUE : '#b0b8c1'}` },
       { label: `추가 옵션 ${b.options.length}건`, value: this.krw(optSum), valStyle: 'font-size:14.5px;font-weight:700' },
       { label: zone ? `출장 · ${zone.name}` : '출장 지역', value: zone ? (zone.price ? this.krw(zone.price) : zone.note) : '미선택', valStyle: `font-size:${zone && zone.price ? '14.5px' : '12.5px'};font-weight:700;color:${zone && zone.price ? '#191f28' : '#b0b8c1'}` }
     ];
@@ -2198,7 +2209,7 @@ class Component extends DCLogic {
         onDragOver: e => e.preventDefault(),
         onDrop: e => { e.preventDefault(); if (this._drag != null) { this.patch(this._drag, { status: st }); this.toast(`상태를 '${st}'(으)로 바꿨어요`); this._drag = null; } },
         cards: cards.map(p => ({
-          name: p.name, date: this.fmtDate(p.date), venue: p.venue || '장소 미정', pkg: p.pkg,
+          name: p.name, date: this.fmtDate(p.date) + (p.time ? ` ${p.time}` : ''), venue: p.venue || '장소 미정', pkg: p.pkg,
           balanceText: this.balance(p) ? this.krw(this.balance(p)) : '완납',
           balanceStyle: `font-size:12px;font-weight:700;white-space:nowrap;color:${this.balance(p) ? this.RED : '#b0b8c1'}`,
           dotStyle: `width:7px;height:7px;border-radius:999px;flex:none;background:${this.statusColor(st)}`,
