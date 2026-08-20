@@ -162,7 +162,7 @@ const toApp = r => ({
   viewCount: r.view_count || 0, lastViewedAt: r.last_viewed_at,
   name: r.display_name || `${r.bride} · ${r.groom}`,
   phone: r.phone, source: r.source || '미확인',
-  date: r.wedding_date, venue: r.venue || '미정', travel: r.venue_region || '',
+  date: r.wedding_date, time: r.wedding_time || '', venue: r.venue || '미정', travel: r.venue_region || '',
   pkg: r.package_name || '', amount: r.amount || 0, paid: r.paid || 0,
   status: r.status, editStage: r.edit_stage,
   timeline: r.timeline || '', shotlist: r.shotlist || '',
@@ -173,8 +173,8 @@ const toApp = r => ({
 const APP2DB = {
   status: 'status', editStage: 'edit_stage', amount: 'amount', paid: 'paid',
   youtube: 'youtube_url', drive: 'drive_url', invoice: 'invoice_no',
-  timeline: 'timeline', shotlist: 'shotlist', venue: 'venue',
-  date: 'wedding_date', pkg: 'package_name', phone: 'phone', memo: 'memo',
+  timeline: 'timeline', shotlist: 'shotlist', venue: 'venue', groom: 'groom', bride: 'bride',
+  date: 'wedding_date', time: 'wedding_time', pkg: 'package_name', phone: 'phone', memo: 'memo',
   checklist: 'checklist', repliedAt: 'first_replied_at', files: 'timeline_files'
 };
 function toDb(patch) {
@@ -324,7 +324,7 @@ export async function uploadClientFile(file, name, phone, slug) {
 
 export async function submitInquiry(b, slug) {
   const core = {
-    p_groom: b.groom, p_bride: b.bride, p_phone: b.phone, p_date: b.date,
+    p_groom: b.groom, p_bride: b.bride, p_phone: b.phone, p_date: b.date, p_time: b.time || null,
     p_venue: b.venue || null, p_region: b.travel || null,
     p_package_id: b.pkgId || null, p_package_name: b.pkgName || null,
     p_options: b.options || [], p_sns: !!b.sns, p_amount: b.amount || 0,
