@@ -164,6 +164,7 @@ const toApp = r => ({
   phone: r.phone, source: r.source || '미확인',
   date: r.wedding_date, time: r.wedding_time || '', venue: r.venue || '미정', travel: r.venue_region || '',
   pkg: r.package_name || '', amount: r.amount || 0, paid: r.paid || 0,
+  options: r.options || [],
   status: r.status, editStage: r.edit_stage,
   timeline: r.timeline || '', shotlist: r.shotlist || '',
   youtube: r.youtube_url || '', drive: r.drive_url || '', invoice: r.invoice_no || '',
@@ -227,6 +228,27 @@ export async function saveSetting(key, value, studioId) {
 }
 
 /* ── 방문자용 RPC ─────────────────────────────── */
+function visitorId() {
+  try {
+    let v = localStorage.getItem('rs_vid');
+    if (!v) { v = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2)); localStorage.setItem('rs_vid', v); }
+    return v;
+  } catch (e) { return ''; }
+}
+export async function track(kind, slug) {
+  const vid = visitorId();
+  if (!vid) return;
+  try { await rpcPub('track_event', { p_slug: slug || currentSlug(), p_visitor: vid, p_kind: kind }); } catch (e) {}
+}
+export async function marketingStats() {
+  try {
+    const r = await rpcAuth('get_marketing_stats', {});
+    const x = (r && r[0]) || {};
+    return { visitors: x.visitors || 0, quotes: x.quotes || 0, kakaos: x.kakaos || 0 };
+  } catch (e) { return { visitors: 0, quotes: 0, kakaos: 0 }; }
+}
+export async function resetMarketingStats() { await rpcAuth('reset_marketing_stats', {}); }
+
 export const bookedDates = slug => rpcCompat('get_public_booking_dates', { p_slug: slug || currentSlug() }, {});
 export const monthLoad = slug => rpcCompat('get_month_load', { p_slug: slug || currentSlug() }, {});
 
