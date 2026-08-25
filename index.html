@@ -196,7 +196,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
       <h1 style="margin:22px 0 16px;font-size:clamp(29px,5.2vw,46px);line-height:1.24;font-weight:800;letter-spacing:-.035em;text-wrap:balance">{{ config.heroTitle }}</h1>      <p class="rs-herosub" style="margin:0 0 32px;max-width:46ch;font-size:clamp(15px,2vw,17px);line-height:1.7;font-weight:500;color:#4e5968;text-wrap:pretty">{{ config.heroSub }}</p>
       <div style="display:flex;flex-wrap:wrap;gap:10px">
         <button type="button" class="t-btn t-pri" onClick="{{ goBooking }}">예약 문의하기</button>
-        <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" style="background:#fee500;color:#191600;text-decoration:none">카카오톡 상담</a>
+        <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" onClick="{{ onKakaoClick }}" style="background:#fee500;color:#191600;text-decoration:none">카카오톡 상담</a>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:44px">
         <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="3">
@@ -387,7 +387,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
           <div style="margin-top:12px;padding:12px 14px;background:rgba(255,255,255,.6);border-radius:12px;font-size:12.5px;line-height:1.6;font-weight:500;color:#6b7684;white-space:pre-line">{{ kakaoMsg }}</div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <button type="button" class="t-btn t-sec" onClick="{{ copyKakaoMsg }}" style="flex:1">문구 복사</button>
-            <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" style="flex:1;background:#fee500;color:#191600;text-decoration:none">카톡 채널 열기</a>
+            <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" onClick="{{ onKakaoClick }}" style="flex:1;background:#fee500;color:#191600;text-decoration:none">카톡 채널 열기</a>
           </div>
         </div>
 
@@ -398,7 +398,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
             <div style="margin-top:10px;padding:12px 14px;background:rgba(255,255,255,.7);border-radius:12px;font-size:12.5px;line-height:1.6;font-weight:500;color:#1b64da;white-space:pre-line">{{ kakaoMsg }}</div>
             <div style="display:flex;gap:8px;margin-top:10px">
               <button type="button" class="t-btn t-sec" onClick="{{ copyKakaoMsg }}" style="flex:1">문구 복사</button>
-              <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" style="flex:1;background:#fee500;color:#191600;text-decoration:none">카톡 채널 열기</a>
+              <a class="t-btn" href="{{ kakaoUrl }}" target="_blank" rel="noopener" onClick="{{ onKakaoClick }}" style="flex:1;background:#fee500;color:#191600;text-decoration:none">카톡 채널 열기</a>
             </div>
           </div>
         </sc-if>
@@ -932,6 +932,44 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
       </div>
     </sc-if>
 
+    <sc-if value="{{ viewIsAnalytics }}" hint-placeholder-val="{{ false }}">
+      <div class="rs-view">
+        <h2 style="margin:0 0 18px;font-size:20px;font-weight:800;letter-spacing:-.03em">📈 마케팅 분석</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+          <sc-for list="{{ mkCards }}" as="k" hint-placeholder-count="3">
+            <div class="t-card" style="padding:20px">
+              <div style="font-size:12.5px;font-weight:700;color:#8b95a1">{{ k.icon }} {{ k.label }}</div>
+              <div style="margin-top:8px;font-size:28px;font-weight:800;letter-spacing:-.04em">{{ k.value }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:16px">
+          <div class="t-card" style="padding:22px">
+            <div style="font-size:14.5px;font-weight:800;letter-spacing:-.02em">🎬 상품 패키지 선호 통계</div>
+            <sc-for list="{{ mkPkgs }}" as="p" hint-placeholder-count="3">
+              <div style="margin-top:14px">
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#4e5968"><span>{{ p.name }}</span><span>{{ p.count }}</span></div>
+                <div style="margin-top:6px;height:6px;border-radius:99px;background:#f2f4f6"><div style="{{ p.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="t-card" style="padding:22px">
+            <div style="font-size:14.5px;font-weight:800;letter-spacing:-.02em">⭐ 추가 옵션 누적 신청 건수</div>
+            <sc-for list="{{ mkOpts }}" as="o" hint-placeholder-count="3">
+              <div style="margin-top:14px">
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#4e5968"><span>{{ o.name }}</span><span>{{ o.count }}</span></div>
+                <div style="margin-top:6px;height:6px;border-radius:99px;background:#f2f4f6"><div style="{{ o.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+          <button type="button" class="t-btn t-sec t-sm" onClick="{{ mkReset }}">↺ 분석 통계 누적치 초기화</button>
+          <span style="font-size:12.5px;font-weight:500;color:#8b95a1">방문자는 기기 기준으로 중복 없이 1회만 집계돼요.</span>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ viewIsCalendar }}" hint-placeholder-val="{{ true }}">
       <div class="rs-view">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px">
@@ -1126,6 +1164,17 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
         <div><span class="t-lb">예식 일자</span><input class="t-in" type="date" value="{{ detail.dateVal }}" onChange="{{ detail.onDate }}"></div>
         <div><span class="t-lb">예식 시간</span><input class="t-in" type="time" value="{{ detail.timeVal }}" onChange="{{ detail.onTime }}"></div>
         <div style="grid-column:1/-1"><span class="t-lb">예식장(웨딩홀)</span><input class="t-in" placeholder="예: SW컨벤션" value="{{ detail.venue }}" onChange="{{ detail.onVenue }}"></div>
+        <sc-if value="{{ detail.metaLines.length }}" hint-placeholder-val="{{ false }}">
+          <div style="grid-column:1/-1;padding-top:6px">
+            <span class="t-lb">문의 접수 정보</span>
+            <div style="margin-top:6px;padding:12px 14px;background:#fff;border-radius:12px;display:grid;gap:5px">
+              <sc-for list="{{ detail.metaLines }}" as="ml" hint-placeholder-count="3">
+                <div style="font-size:13px;line-height:1.6"><span style="font-weight:700;color:#4e5968">{{ ml.k }}</span> · {{ ml.v }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <div style="grid-column:1/-1"><span class="t-lb">메모 / 요청사항</span><textarea class="t-in" rows="2" style="resize:vertical" value="{{ detail.memo }}" onChange="{{ detail.onMemo }}"></textarea></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:22px;margin-top:16px">
         <div style="display:grid;gap:16px;align-content:start">
@@ -1384,6 +1433,7 @@ class Component extends DCLogic {
     faqOpen: 0,
     bannerClosed: (() => { try { return sessionStorage.getItem('rs_evt_closed') === '1'; } catch (e) { return false; } })(),
     blackouts: [], blackoutMode: false, noteMode: false, calNotes: {}, publicBlackouts: [], uploading: false, adminUploading: false,
+    mkStats: { visitors: 0, quotes: 0, kakaos: 0 },
     notifyOn: false,
     payMethod: 'transfer',
     clientForm: { name: '', phone: '' },
@@ -1501,6 +1551,8 @@ class Component extends DCLogic {
     window.addEventListener('resize', this.measureDoc); this.measureDoc();
     this.syncSky();
     this.observeReveals();
+    if (this.sb) this.sb.track('visit');
+    else setTimeout(() => { if (this.sb) this.sb.track('visit'); }, 2500);
     window.addEventListener('scroll', this.queueScan, { passive: true, capture: true });
     document.addEventListener('scroll', this.queueScan, { passive: true, capture: true });
     window.addEventListener('resize', this.queueScan);
@@ -1590,6 +1642,7 @@ class Component extends DCLogic {
   refreshProjects = () => {
     if (!this.sb) return;
     this.setState({ loadingProjects: true });
+    this.sb.marketingStats().then(mkStats => this.setState({ mkStats })).catch(() => {});
     this.sb.listProjects()
       .then(rows => {
         const prevIds = new Set((this.state.projects || []).map(p => p.id));
@@ -1773,6 +1826,7 @@ class Component extends DCLogic {
     v.copyPublicUrl = () => { this.copy(v.publicUrl); this.toast('홈페이지 주소를 복사했어요'); };
     v.goPay = () => this.setState({ appMode: 'pay' });
     v.kakaoUrl = c.kakaoUrl;
+    v.onKakaoClick = () => { if (this.sb) this.sb.track('kakao'); };
     const sl = c.socialLinks || {};
     const ICONS = {
       instagram: { viewBox: '0 0 16 16', svgFill: '#E4405F', stroke: 'none', strokeWidth: 0, paths: ['M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334'] },
@@ -1852,7 +1906,10 @@ class Component extends DCLogic {
         style: `display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:14px;cursor:pointer;background:${on ? '#e8f3ff' : '#f9fafb'};border:1px solid ${on ? this.BLUE : 'transparent'}`
       };
     });
-    const setB = k => e => this.setState({ booking: { ...b, [k]: e.target.value } });
+    const setB = k => e => {
+      if (!this._trackedQuote) { this._trackedQuote = true; if (this.sb) this.sb.track('quote'); }
+      this.setState({ booking: { ...b, [k]: e.target.value } });
+    };
     v.setBookGroom = setB('groom'); v.setBookBride = setB('bride');
     v.setBookPhone = setB('phone'); v.setBookDate = setB('date'); v.setBookTime = setB('time');
     v.setBookVenue = setB('venue'); v.setBookMemo = setB('memo');
@@ -2125,7 +2182,32 @@ class Component extends DCLogic {
 
     v.viewIsDashboard = s.view === 'dashboard'; v.viewIsPipeline = s.view === 'pipeline';
     v.viewIsCalendar = s.view === 'calendar'; v.viewIsContracts = s.view === 'contracts'; v.viewIsCms = s.view === 'cms';
-    v.adminNav = [['dashboard', '대시보드', ''], ['pipeline', '워크플로우', String(P.length)], ['calendar', '일정 캘린더', ''], ['contracts', '전자 계약서', String(P.filter(p => p.status !== '문의').length)], ['cms', '홈페이지 관리', '']].map(([k, label, badge]) => ({
+    v.viewIsAnalytics = s.view === 'analytics';
+    const ms = s.mkStats || { visitors: 0, quotes: 0, kakaos: 0 };
+    const vis = ms.visitors || 0;
+    const pct = n => vis ? Math.round(n / vis * 100) + '%' : '0%';
+    v.mkCards = [
+      { label: '방문자 수', value: String(vis), icon: '👥' },
+      { label: '견적 계산률', value: pct(ms.quotes), icon: '🧮' },
+      { label: '카카오 클릭률', value: pct(ms.kakaos), icon: '💬' }
+    ];
+    const pkgTotal = P.length || 0;
+    v.mkPkgs = c.packages.map(p => {
+      const n = P.filter(x => x.pkg === p.name).length;
+      return { name: p.name, tier: p.tier, count: `${n}건 (${pkgTotal ? Math.round(n / pkgTotal * 100) : 0}%)`,
+        barStyle: `height:6px;border-radius:99px;background:#3182f6;width:${pkgTotal ? Math.round(n / pkgTotal * 100) : 0}%` };
+    });
+    const optMax = Math.max(1, ...c.options.map(o => P.filter(x => (x.options || []).includes(o.id)).length));
+    v.mkOpts = c.options.map(o => {
+      const n = P.filter(x => (x.options || []).includes(o.id)).length;
+      return { name: o.name, count: `${n}건`, barStyle: `height:6px;border-radius:99px;background:#f5a623;width:${Math.round(n / optMax * 100)}%` };
+    });
+    v.mkReset = async () => {
+      if (!window.confirm('분석 통계 누적치를 초기화할까요? (되돌릴 수 없어요)')) return;
+      try { await this.sb.resetMarketingStats(); this.setState({ mkStats: { visitors: 0, quotes: 0, kakaos: 0 } }); this.toast('초기화했어요'); }
+      catch (e) { this.toast('초기화 실패: ' + (e.message || e), 'err'); }
+    };
+    v.adminNav = [['dashboard', '대시보드', ''], ['pipeline', '워크플로우', String(P.length)], ['calendar', '일정 캘린더', ''], ['analytics', '마케팅 분석', ''], ['contracts', '전자 계약서', String(P.filter(p => p.status !== '문의').length)], ['cms', '홈페이지 관리', '']].map(([k, label, badge]) => ({
       label, badge, onClick: () => this.setState({ view: k }),
       style: `display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:4px;padding:13px 16px;border:0;border-radius:14px;cursor:pointer;text-align:left;font-size:14px;font-weight:700;transition:background .15s;background:${s.view === k ? '#fff' : 'transparent'};color:${s.view === k ? '#191f28' : '#6b7684'}`,
       badgeStyle: `font-size:12px;font-weight:700;color:${s.view === k ? this.BLUE : '#b0b8c1'}`
@@ -2412,6 +2494,13 @@ class Component extends DCLogic {
       onGroom: e => this.patch(dp.id, { groom: e.target.value }),
       onBride: e => this.patch(dp.id, { bride: e.target.value }),
       onVenue: e => this.patch(dp.id, { venue: e.target.value }),
+      onMemo: e => this.patch(dp.id, { memo: e.target.value }),
+      memo: dp.memo || '',
+      metaLines: [
+        dp.source ? { k: '유입 경로', v: dp.source } : null,
+        dp.travel ? { k: '출장 지역', v: dp.travel } : null,
+        (dp.options && dp.options.length) ? { k: '선택 옵션', v: dp.options.map(id => (this.state.config.options.find(o => o.id === id) || {}).name || id).join(', ') } : null
+      ].filter(Boolean),
       onDate: e => this.patch(dp.id, { date: e.target.value }),
       onTime: e => this.patch(dp.id, { time: e.target.value }),
       onStatus: e => this.patch(dp.id, { status: e.target.value }),
