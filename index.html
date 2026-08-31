@@ -970,6 +970,37 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
       </div>
     </sc-if>
 
+    <sc-if value="{{ viewIsTax }}" hint-placeholder-val="{{ false }}">
+      <div class="rs-view">
+        <h2 style="margin:0 0 4px;font-size:20px;font-weight:800;letter-spacing:-.03em">🧾 세금 관리</h2>
+        <div style="margin:0 0 18px;font-size:12.5px;font-weight:500;color:#8b95a1">실제 입금액(간이과세 아닌 일반과세 기준, 부가세 10% 포함가) 역산 예상치입니다 · 정확한 신고는 세무사와 확인하세요</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+          <sc-for list="{{ taxHalves }}" as="h" hint-placeholder-count="2">
+            <div class="t-card" style="padding:20px">
+              <div style="font-size:13px;font-weight:700;color:#8b95a1">{{ h.label }} · {{ h.count }}건</div>
+              <div style="margin-top:8px;font-size:24px;font-weight:800;letter-spacing:-.03em;color:#191f28">{{ h.vatText }}</div>
+              <div style="margin-top:4px;font-size:12px;font-weight:600;color:#b0b8c1">예상 부가세 (공급가액 {{ h.supplyText }} · 입금 총액 {{ h.totalText }})</div>
+            </div>
+          </sc-for>
+          <div class="t-card" style="padding:20px;background:#eef7ff">
+            <div style="font-size:13px;font-weight:700;color:#1b64da">올해 누적 · {{ taxYtd.count }}건</div>
+            <div style="margin-top:8px;font-size:24px;font-weight:800;letter-spacing:-.03em;color:#1b64da">{{ taxYtd.vatText }}</div>
+            <div style="margin-top:4px;font-size:12px;font-weight:600;color:#5f95d6">예상 부가세 (공급가액 {{ taxYtd.supplyText }} · 입금 총액 {{ taxYtd.totalText }})</div>
+          </div>
+        </div>
+        <div class="t-card" style="margin-top:16px;padding:0;overflow:hidden">
+          <table class="t-table" style="width:100%;border-collapse:collapse">
+            <thead><tr style="background:#f8f9fb"><th style="text-align:left;padding:12px 16px;font-size:12px;color:#8b95a1">고객</th><th style="text-align:left;padding:12px 16px;font-size:12px;color:#8b95a1">예식일</th><th style="text-align:right;padding:12px 16px;font-size:12px;color:#8b95a1">입금액</th><th style="text-align:right;padding:12px 16px;font-size:12px;color:#8b95a1">예상 부가세</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ taxRows }}" as="r" hint-placeholder-count="4">
+                <tr style="border-top:1px solid #f2f4f6"><td style="padding:12px 16px;font-size:13.5px;font-weight:600">{{ r.name }}</td><td style="padding:12px 16px;font-size:13px;color:#6b7684">{{ r.date }}</td><td style="padding:12px 16px;font-size:13.5px;font-weight:600;text-align:right">{{ r.paidText }}</td><td style="padding:12px 16px;font-size:13.5px;font-weight:700;color:#e0522f;text-align:right">{{ r.vatText }}</td></tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ viewIsCalendar }}" hint-placeholder-val="{{ true }}">
       <div class="rs-view">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px">
@@ -1063,6 +1094,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
           <div><span class="t-lb">메인 헤드라인</span><input class="t-in" value="{{ config.heroTitle }}" onChange="{{ cms.heroTitle }}"></div>
           <div><span class="t-lb">메인 서브카피</span><textarea class="t-in" value="{{ config.heroSub }}" onChange="{{ cms.heroSub }}"></textarea></div>
           <div><span class="t-lb">이벤트 배너</span><input class="t-in" value="{{ config.eventBanner }}" onChange="{{ cms.eventBanner }}"></div>
+          <div style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked="{{ config.eventBannerEnabled }}" onChange="{{ cms.eventBannerEnabled }}" id="evtEnable"><label for="evtEnable" style="font-size:13px;font-weight:600;color:#4e5968">홈페이지에 이벤트 배너 표시</label></div>
           <div><span class="t-lb">스튜디오 철학</span><textarea class="t-in" value="{{ config.philosophy }}" onChange="{{ cms.philosophy }}"></textarea></div>
           <div><span class="t-lb">예약 안내 사항</span><textarea class="t-in" value="{{ config.notice }}" onChange="{{ cms.notice }}"></textarea></div>
         </div>
@@ -1551,8 +1583,8 @@ class Component extends DCLogic {
     window.addEventListener('resize', this.measureDoc); this.measureDoc();
     this.syncSky();
     this.observeReveals();
-    if (this.sb) this.sb.track('visit');
-    else setTimeout(() => { if (this.sb) this.sb.track('visit'); }, 2500);
+    if (this.sb && this.sb.track) this.sb.track('visit');
+    else setTimeout(() => { if (this.sb && this.sb.track) this.sb.track('visit'); }, 2500);
     window.addEventListener('scroll', this.queueScan, { passive: true, capture: true });
     document.addEventListener('scroll', this.queueScan, { passive: true, capture: true });
     window.addEventListener('resize', this.queueScan);
@@ -1642,7 +1674,7 @@ class Component extends DCLogic {
   refreshProjects = () => {
     if (!this.sb) return;
     this.setState({ loadingProjects: true });
-    this.sb.marketingStats().then(mkStats => this.setState({ mkStats })).catch(() => {});
+    if (this.sb && this.sb.marketingStats) this.sb.marketingStats().then(mkStats => this.setState({ mkStats })).catch(() => {});
     this.sb.listProjects()
       .then(rows => {
         const prevIds = new Set((this.state.projects || []).map(p => p.id));
@@ -1737,7 +1769,7 @@ class Component extends DCLogic {
         onToggle: () => this.setState({ faqOpen: open ? -1 : i })
       };
     });
-    v.showBanner = (this.props.showEventBanner ?? true) && !!c.eventBanner && !s.bannerClosed;
+    v.showBanner = (this.props.showEventBanner ?? true) && (c.eventBannerEnabled !== false) && !!c.eventBanner && !s.bannerClosed;
     v.dismissBanner = () => { this.setState({ bannerClosed: true }); try { sessionStorage.setItem('rs_evt_closed', '1'); } catch (e) {} };
     const dx = s.evtSwipeDx || 0;
     v.evtSwipeStyle = dx ? `transform:translateX(${dx}px);opacity:${Math.max(0, 1 - Math.abs(dx) / 160)};transition:none` : '';
@@ -1826,7 +1858,7 @@ class Component extends DCLogic {
     v.copyPublicUrl = () => { this.copy(v.publicUrl); this.toast('홈페이지 주소를 복사했어요'); };
     v.goPay = () => this.setState({ appMode: 'pay' });
     v.kakaoUrl = c.kakaoUrl;
-    v.onKakaoClick = () => { if (this.sb) this.sb.track('kakao'); };
+    v.onKakaoClick = () => { if (this.sb && this.sb.track) this.sb.track('kakao'); };
     const sl = c.socialLinks || {};
     const ICONS = {
       instagram: { viewBox: '0 0 16 16', svgFill: '#E4405F', stroke: 'none', strokeWidth: 0, paths: ['M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334'] },
@@ -1907,7 +1939,7 @@ class Component extends DCLogic {
       };
     });
     const setB = k => e => {
-      if (!this._trackedQuote) { this._trackedQuote = true; if (this.sb) this.sb.track('quote'); }
+      if (!this._trackedQuote) { this._trackedQuote = true; if (this.sb && this.sb.track) this.sb.track('quote'); }
       this.setState({ booking: { ...b, [k]: e.target.value } });
     };
     v.setBookGroom = setB('groom'); v.setBookBride = setB('bride');
@@ -2183,6 +2215,31 @@ class Component extends DCLogic {
     v.viewIsDashboard = s.view === 'dashboard'; v.viewIsPipeline = s.view === 'pipeline';
     v.viewIsCalendar = s.view === 'calendar'; v.viewIsContracts = s.view === 'contracts'; v.viewIsCms = s.view === 'cms';
     v.viewIsAnalytics = s.view === 'analytics';
+    v.viewIsTax = s.view === 'tax';
+    { // 세금 관리 (간이 부가세 계산)
+      const now = new Date();
+      const y = now.getFullYear();
+      const inRange = (d, from, to) => d >= from && d < to;
+      const halves = [
+        { label: `${y}년 1기 (1~6월)`, from: new Date(y, 0, 1), to: new Date(y, 6, 1) },
+        { label: `${y}년 2기 (7~12월)`, from: new Date(y, 6, 1), to: new Date(y + 1, 0, 1) }
+      ];
+      const paidProjects = P.filter(p => (p.paid || 0) > 0);
+      const pdate = p => p.date ? new Date(p.date + 'T00:00:00') : null;
+      v.taxHalves = halves.map(h => {
+        const rows = paidProjects.filter(p => { const d = pdate(p); return d && inRange(d, h.from, h.to); });
+        const supply = rows.reduce((s2, p) => s2 + Math.round((p.paid || 0) / 1.1), 0);
+        const vat = rows.reduce((s2, p) => s2 + ((p.paid || 0) - Math.round((p.paid || 0) / 1.1)), 0);
+        const total = rows.reduce((s2, p) => s2 + (p.paid || 0), 0);
+        return { label: h.label, count: rows.length, supplyText: this.krw(supply), vatText: this.krw(vat), totalText: this.krw(total) };
+      });
+      const ytdRows = paidProjects.filter(p => { const d = pdate(p); return d && d.getFullYear() === y; });
+      const ytdTotal = ytdRows.reduce((s2, p) => s2 + (p.paid || 0), 0);
+      v.taxYtd = { count: ytdRows.length, supplyText: this.krw(Math.round(ytdTotal / 1.1)), vatText: this.krw(ytdTotal - Math.round(ytdTotal / 1.1)), totalText: this.krw(ytdTotal) };
+      v.taxRows = ytdRows.slice()
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+        .map(p => ({ name: p.name, date: this.fmtDate(pdate(p)), paidText: this.krw(p.paid || 0), vatText: this.krw((p.paid || 0) - Math.round((p.paid || 0) / 1.1)) }));
+    }
     const ms = s.mkStats || { visitors: 0, quotes: 0, kakaos: 0 };
     const vis = ms.visitors || 0;
     const pct = n => vis ? Math.round(n / vis * 100) + '%' : '0%';
@@ -2204,10 +2261,11 @@ class Component extends DCLogic {
     });
     v.mkReset = async () => {
       if (!window.confirm('분석 통계 누적치를 초기화할까요? (되돌릴 수 없어요)')) return;
+      if (!this.sb || !this.sb.resetMarketingStats) { this.toast('sb.js 업데이트 후 이용해 주세요', 'err'); return; }
       try { await this.sb.resetMarketingStats(); this.setState({ mkStats: { visitors: 0, quotes: 0, kakaos: 0 } }); this.toast('초기화했어요'); }
       catch (e) { this.toast('초기화 실패: ' + (e.message || e), 'err'); }
     };
-    v.adminNav = [['dashboard', '대시보드', ''], ['pipeline', '워크플로우', String(P.length)], ['calendar', '일정 캘린더', ''], ['analytics', '마케팅 분석', ''], ['contracts', '전자 계약서', String(P.filter(p => p.status !== '문의').length)], ['cms', '홈페이지 관리', '']].map(([k, label, badge]) => ({
+    v.adminNav = [['dashboard', '대시보드', ''], ['pipeline', '워크플로우', String(P.length)], ['calendar', '일정 캘린더', ''], ['analytics', '마케팅 분석', ''], ['tax', '세금 관리', ''], ['contracts', '전자 계약서', String(P.filter(p => p.status !== '문의').length)], ['cms', '홈페이지 관리', '']].map(([k, label, badge]) => ({
       label, badge, onClick: () => this.setState({ view: k }),
       style: `display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:4px;padding:13px 16px;border:0;border-radius:14px;cursor:pointer;text-align:left;font-size:14px;font-weight:700;transition:background .15s;background:${s.view === k ? '#fff' : 'transparent'};color:${s.view === k ? '#191f28' : '#6b7684'}`,
       badgeStyle: `font-size:12px;font-weight:700;color:${s.view === k ? this.BLUE : '#b0b8c1'}`
@@ -2366,7 +2424,7 @@ class Component extends DCLogic {
     const bindCfg = k => e => this.setCfg(k, e.target.value);
     const bindSocial = k => e => this.setCfg('socialLinks', { ...(c.socialLinks || {}), [k]: e.target.value });
     v.setSocial = { instagram: bindSocial('instagram'), blog: bindSocial('blog'), notion: bindSocial('notion'), email: bindSocial('email'), phone: bindSocial('phone') };
-    v.cms = { heroKicker: bindCfg('heroKicker'), heroTitle: bindCfg('heroTitle'), heroSub: bindCfg('heroSub'), eventBanner: bindCfg('eventBanner'), philosophy: bindCfg('philosophy'), notice: bindCfg('notice') };
+    v.cms = { heroKicker: bindCfg('heroKicker'), heroTitle: bindCfg('heroTitle'), heroSub: bindCfg('heroSub'), eventBanner: bindCfg('eventBanner'), eventBannerEnabled: e => this.setCfg('eventBannerEnabled', e.target.checked), philosophy: bindCfg('philosophy'), notice: bindCfg('notice') };
     const heroGal = (c.gallery || []).map(g => (typeof g === 'string' ? { url: g, pos: 'center' } : { url: g.url, pos: g.pos || 'center' }));
     const heroSlides = heroGal.length ? heroGal : (c.heroPhoto ? [{ url: c.heroPhoto, pos: c.heroPos || 'center' }] : []);
     const heroIdx = heroSlides.length ? (((s.heroIdx || 0) % heroSlides.length) + heroSlides.length) % heroSlides.length : 0;
@@ -2475,7 +2533,7 @@ class Component extends DCLogic {
     }));
     v.saveCms = () => {
       if (!this.sb || !s.authed) { this.toast('관리자 로그인이 필요해요', 'err'); return; }
-      const home = { heroKicker: c.heroKicker, heroTitle: c.heroTitle, heroSub: c.heroSub, heroPhoto: c.heroPhoto, heroPos: c.heroPos, gallery: c.gallery, eventBanner: c.eventBanner, philosophy: c.philosophy, notice: c.notice, kakaoUrl: c.kakaoUrl, payAccount: c.payAccount, payHolder: c.payHolder, videos: c.videos, diffs: c.diffs, reviews: c.reviews, socialLinks: c.socialLinks };
+      const home = { heroKicker: c.heroKicker, heroTitle: c.heroTitle, heroSub: c.heroSub, heroPhoto: c.heroPhoto, heroPos: c.heroPos, gallery: c.gallery, eventBanner: c.eventBanner, eventBannerEnabled: c.eventBannerEnabled !== false, philosophy: c.philosophy, notice: c.notice, kakaoUrl: c.kakaoUrl, payAccount: c.payAccount, payHolder: c.payHolder, videos: c.videos, diffs: c.diffs, reviews: c.reviews, socialLinks: c.socialLinks };
       const price = { depositFixed: c.depositFixed, monthlyLimit: c.monthlyLimit, peakMonths: c.peakMonths, packages: c.packages, options: c.options, travelZones: c.travelZones };
       const sid = s.studio && s.studio.id;
       Promise.all([this.sb.saveSetting('homepage', home, sid), this.sb.saveSetting('pricing', price, sid)])
