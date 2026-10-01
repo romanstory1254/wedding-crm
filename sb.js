@@ -168,7 +168,8 @@ const toApp = r => ({
   status: r.status, editStage: r.edit_stage,
   timeline: r.timeline || '', shotlist: r.shotlist || '',
   youtube: r.youtube_url || '', drive: r.drive_url || '', invoice: r.invoice_no || '',
-  memo: r.memo || ''
+  memo: r.memo || '',
+  receiptRequest: r.receipt_request || null
 });
 
 const APP2DB = {
@@ -176,7 +177,7 @@ const APP2DB = {
   youtube: 'youtube_url', drive: 'drive_url', invoice: 'invoice_no',
   timeline: 'timeline', shotlist: 'shotlist', venue: 'venue', groom: 'groom', bride: 'bride',
   date: 'wedding_date', time: 'wedding_time', pkg: 'package_name', phone: 'phone', memo: 'memo',
-  checklist: 'checklist', repliedAt: 'first_replied_at', files: 'timeline_files'
+  checklist: 'checklist', repliedAt: 'first_replied_at', files: 'timeline_files', receiptRequest: 'receipt_request'
 };
 function toDb(patch) {
   const out = {};
@@ -342,6 +343,17 @@ export async function uploadClientFile(file, name, phone, slug) {
   } catch (e) { throw new Error(MISSING(e) ? SETUP_MSG : (e.message || e)); }
   if (!ok) throw new Error('예약 정보를 찾을 수 없어요');
   return url;
+}
+
+export async function submitReceipt(name, phone, reqBody, slug) {
+  let ok;
+  try {
+    ok = await rpcPub('submit_receipt_request', { p_slug: slug || currentSlug(), p_name: name, p_phone: phone, p_req: reqBody });
+  } catch (e) {
+    throw new Error(MISSING(e) ? 'supabase-receipt.sql 을 실행해야 사용할 수 있어요.' : (e.message || e));
+  }
+  if (!ok) throw new Error('예약 정보를 찾을 수 없어요');
+  return true;
 }
 
 export async function submitInquiry(b, slug) {

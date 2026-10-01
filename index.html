@@ -181,6 +181,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
     <button type="button" class="rs-evt-x" onClick="{{ dismissBanner }}" aria-label="닫기">×</button>
     <div class="rs-evt-kicker">Open Event</div>
     <div class="rs-evt-body">{{ config.eventBanner }}</div>
+    <button type="button" onClick="{{ hideBannerToday }}" style="margin-top:10px;padding:0;border:0;background:none;font:inherit;font-size:12px;font-weight:600;color:inherit;opacity:.7;text-decoration:underline;cursor:pointer">오늘 하루 보지 않기</button>
     <button type="button" class="rs-evt-cta" onClick="{{ goBookingFromBanner }}">예약 문의하기</button>
     <div style="margin-top:8px;font-size:11px;font-weight:500;color:rgba(60,40,28,.42);text-align:center">옆으로 넘겨서 닫기</div>
   </div>
@@ -1004,6 +1005,36 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
       <div class="rs-view">
         <h2 style="margin:0 0 4px;font-size:20px;font-weight:800;letter-spacing:-.03em">🧾 세금 관리</h2>
         <div style="margin:0 0 18px;font-size:12.5px;font-weight:500;color:#8b95a1">실제 입금액(간이과세 아닌 일반과세 기준, 부가세 10% 포함가) 역산 예상치입니다 · 정확한 신고는 세무사와 확인하세요</div>
+        <div class="t-card" style="padding:22px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">증빙 서류 신청 내역</div>
+            <div style="font-size:12.5px;font-weight:700;color:#c2410c">발급 대기 {{ receiptPending }}건</div>
+          </div>
+          <sc-if value="{{ hasReceiptReqs }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:14px">
+              <sc-for list="{{ receiptReqs }}" as="rq" hint-placeholder-count="2">
+                <div style="padding:16px;border-radius:14px;background:#f9fafb;border:1px solid #e5e8eb">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <div><div style="font-size:14px;font-weight:800">{{ rq.name }}</div><div style="font-size:12px;font-weight:500;color:#8b95a1">예식 {{ rq.date }}</div></div>
+                    <span style="{{ rq.stateStyle }}">{{ rq.stateText }}</span>
+                  </div>
+                  <div style="margin-top:10px;display:grid;gap:4px">
+                    <sc-for list="{{ rq.lines }}" as="rl" hint-placeholder-count="3">
+                      <div style="font-size:12.5px;line-height:1.55;word-break:break-all"><span style="font-weight:700;color:#4e5968">{{ rl.k }}</span> · {{ rl.v }}</div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:12px">
+                    <button type="button" class="t-btn t-pri" style="flex:1;padding:9px 12px;font-size:12.5px" onClick="{{ rq.onToggle }}">{{ rq.toggleText }}</button>
+                    <button type="button" class="t-btn" style="padding:9px 12px;font-size:12.5px" onClick="{{ rq.onOpen }}">예약 상세</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noReceiptReqs }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:10px;font-size:13px;font-weight:500;color:#8b95a1">아직 접수된 신청이 없어요. 고객이 결제 탭에서 신청하면 여기에 나타나요.</div>
+          </sc-if>
+        </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
           <sc-for list="{{ taxHalves }}" as="h" hint-placeholder-count="2">
             <div class="t-card" style="padding:20px">
@@ -1124,7 +1155,13 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
           <div><span class="t-lb">메인 헤드라인</span><input class="t-in" value="{{ config.heroTitle }}" onChange="{{ cms.heroTitle }}"></div>
           <div><span class="t-lb">메인 서브카피</span><textarea class="t-in" value="{{ config.heroSub }}" onChange="{{ cms.heroSub }}"></textarea></div>
           <div><span class="t-lb">이벤트 배너</span><input class="t-in" value="{{ config.eventBanner }}" onChange="{{ cms.eventBanner }}"></div>
-          <div style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked="{{ config.eventBannerEnabled }}" onChange="{{ cms.eventBannerEnabled }}" id="evtEnable"><label for="evtEnable" style="font-size:13px;font-weight:600;color:#4e5968">홈페이지에 이벤트 배너 표시</label></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:12px;background:#f2f4f6">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#191f28">이벤트 배너 {{ bannerStateLabel }}</div>
+              <div style="margin-top:2px;font-size:12px;font-weight:500;color:#6b7684">끄면 모든 고객에게 배너가 보이지 않아요. 변경 후 아래 저장을 눌러주세요.</div>
+            </div>
+            <button type="button" onClick="{{ toggleBanner }}" style="{{ bannerToggleStyle }}" aria-label="이벤트 배너 켜기/끄기"><span style="{{ bannerKnobStyle }}"></span></button>
+          </div>
           <div><span class="t-lb">스튜디오 철학</span><textarea class="t-in" value="{{ config.philosophy }}" onChange="{{ cms.philosophy }}"></textarea></div>
           <div><span class="t-lb">예약 안내 사항</span><textarea class="t-in" value="{{ config.notice }}" onChange="{{ cms.notice }}"></textarea></div>
         </div>
@@ -1232,6 +1269,16 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
             <div style="margin-top:6px;padding:12px 14px;background:#fff;border-radius:12px;display:grid;gap:5px">
               <sc-for list="{{ detail.metaLines }}" as="ml" hint-placeholder-count="3">
                 <div style="font-size:13px;line-height:1.6"><span style="font-weight:700;color:#4e5968">{{ ml.k }}</span> · {{ ml.v }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ detail.hasReceipt }}" hint-placeholder-val="{{ false }}">
+          <div style="grid-column:1/-1;padding-top:6px">
+            <span class="t-lb">증빙 서류 신청 (현금영수증 · 세금계산서)</span>
+            <div style="margin-top:6px;padding:12px 14px;background:#fff;border-radius:12px;display:grid;gap:5px">
+              <sc-for list="{{ detail.receiptLines }}" as="rl" hint-placeholder-count="3">
+                <div style="font-size:13px;line-height:1.6"><span style="font-weight:700;color:#4e5968">{{ rl.k }}</span> · {{ rl.v }}</div>
               </sc-for>
             </div>
           </div>
@@ -1500,7 +1547,7 @@ class Component extends DCLogic {
     dbReady: false, dbError: '', loadingProjects: false, takenDates: [], monthLoad: {},
     clientRecord: null, payRecord: null,
     faqOpen: 0,
-    bannerClosed: (() => { try { return sessionStorage.getItem('rs_evt_closed') === '1'; } catch (e) { return false; } })(),
+    bannerClosed: (() => { try { if (sessionStorage.getItem('rs_evt_closed') === '1') return true; const t = new Date(); return localStorage.getItem('rs_evt_hide_day') === `${t.getFullYear()}-${t.getMonth() + 1}-${t.getDate()}`; } catch (e) { return false; } })(),
     blackouts: [], blackoutMode: false, noteMode: false, calNotes: {}, publicBlackouts: [], uploading: false, adminUploading: false,
     mkStats: { visitors: 0, quotes: 0, kakaos: 0 },
     notifyOn: false,
@@ -1807,7 +1854,13 @@ class Component extends DCLogic {
       };
     });
     v.showBanner = (this.props.showEventBanner ?? true) && (c.eventBannerEnabled !== false) && !!c.eventBanner && !s.bannerClosed;
+    const bannerOn = c.eventBannerEnabled !== false;
+    v.bannerStateLabel = bannerOn ? '켜짐' : '꺼짐';
+    v.toggleBanner = () => this.setCfg('eventBannerEnabled', !bannerOn);
+    v.bannerToggleStyle = `flex:none;position:relative;width:48px;height:28px;border:0;border-radius:999px;cursor:pointer;transition:background .2s;background:${bannerOn ? '#3182f6' : '#c9ced4'}`;
+    v.bannerKnobStyle = `position:absolute;top:3px;left:${bannerOn ? 23 : 3}px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s`;
     v.dismissBanner = () => { this.setState({ bannerClosed: true }); try { sessionStorage.setItem('rs_evt_closed', '1'); } catch (e) {} };
+    v.hideBannerToday = () => { this.setState({ bannerClosed: true }); try { const t = new Date(); localStorage.setItem('rs_evt_hide_day', `${t.getFullYear()}-${t.getMonth() + 1}-${t.getDate()}`); } catch (e) {} };
     const dx = s.evtSwipeDx || 0;
     v.evtSwipeStyle = dx ? `transform:translateX(${dx}px);opacity:${Math.max(0, 1 - Math.abs(dx) / 160)};transition:none` : '';
     v.evtTouchStart = e => { this._evtX0 = e.touches[0].clientX; };
@@ -2174,11 +2227,10 @@ class Component extends DCLogic {
       if (f.doc === 'tax' && (!f.bizNo.trim() || !f.bizName.trim() || !f.ceoName.trim() || !f.email.trim())) err = '사업자등록번호·상호명·대표자명·이메일을 입력해 주세요';
       if (err) { this.setState({ receiptError: err }); return; }
       this.setState({ receiptError: '' });
-      if (pp && this.sb) {
-        this.patch(pp.id, { receiptRequest: { ...f, requestedAt: new Date().toISOString() } });
-      }
-      this.setState({ receiptSent: true });
-      this.toast('증빙 서류 신청이 접수됐어요');
+      if (!pp || !this.sb || !this.sb.submitReceipt) { this.toast('연결 준비 중이에요', 'err'); return; }
+      this.sb.submitReceipt(pf.name, pf.phone, { ...f })
+        .then(() => { this.setState({ receiptSent: true }); this.toast('증빙 서류 신청이 접수됐어요'); })
+        .catch(e => this.setState({ receiptError: '신청 실패: ' + (e.message || e) }));
     };
 
     const cp = s.clientRecord;
@@ -2581,7 +2633,39 @@ class Component extends DCLogic {
     };
 
     const dp = P.find(p => p.id === s.detailId);
+    const rcLines = r => {
+      if (!r) return [];
+      const docName = r.doc === 'tax' ? '세금계산서' : (r.purpose === 'biz' ? '현금영수증 (사업자 지출증빙)' : '현금영수증 (개인 소득공제)');
+      const at = r.requestedAt ? new Date(r.requestedAt) : null;
+      return [
+        { k: '종류', v: docName },
+        r.doc !== 'tax' && r.purpose !== 'biz' && r.phone ? { k: '휴대폰번호', v: r.phone } : null,
+        r.bizNo ? { k: '사업자번호', v: r.bizNo } : null,
+        r.bizName ? { k: '상호명', v: r.bizName } : null,
+        r.ceoName ? { k: '대표자', v: r.ceoName } : null,
+        r.bizAddr ? { k: '사업장 주소', v: r.bizAddr } : null,
+        r.bizType ? { k: '업태/종목', v: r.bizType } : null,
+        r.contactName ? { k: '담당자', v: r.contactName } : null,
+        r.contactPhone ? { k: '담당자 연락처', v: r.contactPhone } : null,
+        r.email ? { k: '이메일', v: r.email } : null,
+        at ? { k: '신청일시', v: `${at.getFullYear()}.${String(at.getMonth() + 1).padStart(2, '0')}.${String(at.getDate()).padStart(2, '0')} ${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}` } : null
+      ].filter(Boolean);
+    };
+    v.receiptReqs = P.filter(p => p.receiptRequest).sort((a, b) => String((b.receiptRequest || {}).requestedAt || '').localeCompare(String((a.receiptRequest || {}).requestedAt || ''))).map(p => {
+      const done = !!p.receiptRequest.done;
+      return {
+        name: p.name, date: this.fmtDate(p.date), lines: rcLines(p.receiptRequest),
+        stateText: done ? '발급 완료' : '발급 대기',
+        stateStyle: `padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:${done ? '#e9f9ee' : '#fff0e6'};color:${done ? '#1a8a4c' : '#c2410c'}`,
+        toggleText: done ? '대기로 되돌리기' : '발급 완료 처리',
+        onToggle: () => this.patch(p.id, { receiptRequest: { ...p.receiptRequest, done: !done } }),
+        onOpen: () => this.setState({ detailId: p.id })
+      };
+    });
+    v.hasReceiptReqs = v.receiptReqs.length > 0; v.noReceiptReqs = !v.hasReceiptReqs;
+    v.receiptPending = v.receiptReqs.filter(r => r.stateText === '발급 대기').length;
     v.detail = dp ? {
+      receiptLines: rcLines(dp.receiptRequest), hasReceipt: !!dp.receiptRequest,
       open: true, groom: dp.groom || '', bride: dp.bride || '', venue: dp.venue === '미정' ? '' : (dp.venue || ''),
       dateVal: dp.date || '', timeVal: dp.time || '',
       phoneText: dp.phone, pkgText: dp.pkg,
