@@ -303,7 +303,7 @@ export async function uploadFile(file, slug) {
   const path = `${(slug || currentSlug())}/admin_${Date.now()}_${safe}`;
   const res = await fetch(`${SB_URL}/storage/v1/object/client-files/${encodeURI(path)}`, {
     method: 'POST',
-    headers: Object.assign(headers(true), { 'x-upsert': 'true', 'Content-Type': file.type || 'application/octet-stream' }),
+    headers: Object.assign(headers(true), { 'x-upsert': 'true', 'cache-control': 'max-age=31536000', 'Content-Type': file.type || 'application/octet-stream' }),
     body: file
   });
   if (!res.ok) {

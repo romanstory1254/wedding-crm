@@ -126,6 +126,7 @@ html.sky .r-pg [style*="border:2px solid #e5e8eb"]{border-color:rgba(242,140,80,
 .rs-evt.rs-evt-mini .rs-evt-x{position:static;flex-shrink:0;width:32px;height:32px}
 @media(max-width:600px){.rs-evt.rs-evt-mini{width:auto;padding:6px 8px 6px 6px}}
 @media (prefers-reduced-motion:reduce){.rs-evt{animation:none}}
+@media (hover:none){.rs-hero-arrows{display:none!important}}
 .rs-faq-q{display:flex;align-items:center;gap:12px;width:100%;padding:18px 16px;border:0;background:transparent;cursor:pointer;transition:background .16s ease}
 .rs-faq-q:hover{background:rgba(242,104,28,.06)}
 @keyframes rsRise{from{opacity:0;transform:translateY(26px);filter:blur(7px)}60%{filter:blur(0)}to{opacity:1;transform:none;filter:blur(0)}}
@@ -170,6 +171,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
  .r-nav button{width:auto!important;margin-bottom:0!important;white-space:nowrap;flex:none}
  .r-modal{grid-template-columns:minmax(0,1fr)!important}
  .r-hero{min-height:220px!important}
+
  .r-pad{padding:28px 6px 24px!important}
  .r-kanban{grid-template-columns:1fr!important;overflow-x:visible!important}
  .r-kanban-select{display:block!important}
@@ -273,15 +275,20 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
         </sc-for>
       </div>
     </div>
-    <div class="r-hero" style="{{ heroBoxStyle }}">
+    <div class="r-hero" style="{{ heroBoxStyle }}" onPointerDown="{{ heroPointerDown }}" onPointerMove="{{ heroPointerMove }}" onPointerUp="{{ heroPointerUp }}" onPointerCancel="{{ heroPointerUp }}">
+      <div class="rs-hero-track" style="{{ heroTrackStyle }}">
+        <sc-for list="{{ heroSlideList }}" as="sl" hint-placeholder-count="1">
+          <div style="{{ sl.style }}"></div>
+        </sc-for>
+      </div>
       <div style="{{ heroPlaceholderStyle }}">Hero still — 이미지 자리</div>
-      <div style="{{ heroArrowWrapStyle }}">
+      <div class="rs-hero-arrows" style="{{ heroArrowWrapStyle }}">
         <button onClick="{{ heroPrev }}" style="pointer-events:auto;width:38px;height:38px;border-radius:50%;border:none;background:rgba(0,0,0,.38);color:#fff;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px)">‹</button>
         <button onClick="{{ heroNext }}" style="pointer-events:auto;width:38px;height:38px;border-radius:50%;border:none;background:rgba(0,0,0,.38);color:#fff;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px)">›</button>
       </div>
       <div style="{{ heroDotsWrapStyle }}">
         <sc-for list="{{ heroDots }}" as="d" hint-placeholder-count="0">
-          <div onClick="{{ d.onClick }}" style="{{ d.style }};cursor:pointer"></div>
+          <div onClick="{{ d.onClick }}" style="{{ d.style }};cursor:pointer;position:relative"></div>
         </sc-for>
       </div>
     </div>
@@ -1292,6 +1299,8 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
             <input type="file" onChange="{{ onGalleryUpload }}" accept="image/*" multiple style="display:none">
             {{ galleryUploadLabel }}
           </label>
+          <button type="button" onClick="{{ optimizeGallery }}" style="display:block;width:100%;margin-top:10px;min-height:44px;padding:12px;border:0;border-radius:12px;background:#fff8e6;color:#a86a00;font-size:13.5px;font-weight:700;cursor:pointer">{{ optimizeLabel }}</button>
+          <div style="margin-top:6px;font-size:12px;line-height:1.6;font-weight:500;color:#8b95a1">새로 올리는 사진은 자동으로 가볍게 줄여서 올라가요. 기존 사진은 위 버튼을 한 번 누른 뒤 저장해 주세요.</div>
         </div>
         <div class="t-card" style="margin-top:16px;padding:28px">
           <div style="font-size:15px;font-weight:700;letter-spacing:-.02em">패키지 가격</div>
@@ -1583,6 +1592,30 @@ const HERO_POSES = [
   ['left bottom', '↙'], ['center bottom', '↓'], ['right bottom', '↘']
 ];
 const TRANSPARENT_PX = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+// 사진 용량 줄이기: 짧은 변 1800px(레티나 큰 화면에서도 원본과 구분 안 되는 크기), JPEG 82%
+const shrinkImage = (file, shortSide = 1800, quality = 0.82) => new Promise(resolve => {
+  try {
+    if (!file || !/^image\/(jpeg|png|webp)$/.test(file.type)) return resolve(file);
+    const src = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(src);
+      const r = Math.min(1, shortSide / Math.min(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * r), h = Math.round(img.naturalHeight * r);
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      const cx = cv.getContext('2d');
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h);
+      cx.drawImage(img, 0, 0, w, h);
+      cv.toBlob(b => {
+        if (!b || b.size >= file.size) return resolve(file);
+        resolve(new File([b], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(src); resolve(file); };
+    img.src = src;
+  } catch (e) { resolve(file); }
+});
 const RECEIPT_LABEL = { personal: '개인 현금영수증', biz: '사업자 현금영수증', tax: '세금계산서' };
 class Component extends DCLogic {
   STATUSES = ['문의', '예약', '촬영', '편집', '납품'];
@@ -2641,9 +2674,46 @@ class Component extends DCLogic {
     const heroSlides = heroGal.length ? heroGal : (c.heroPhoto ? [{ url: c.heroPhoto, pos: c.heroPos || 'center' }] : []);
     const heroIdx = heroSlides.length ? (((s.heroIdx || 0) % heroSlides.length) + heroSlides.length) % heroSlides.length : 0;
     const curHero = heroSlides[heroIdx];
-    v.heroBoxStyle = 'min-height:460px;height:100%;border-radius:24px;display:flex;align-items:flex-end;padding:24px;overflow:hidden;position:relative;' + (curHero
-      ? `background:#dfe6ed url("${curHero.url}") ${curHero.pos || 'center'}/cover no-repeat`
+    v.heroBoxStyle = 'min-height:460px;height:100%;border-radius:24px;display:flex;align-items:flex-end;padding:24px;overflow:hidden;position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none;' + (curHero
+      ? 'background:#14121f;' + (heroSlides.length > 1 ? 'cursor:grab' : '')
       : 'background:linear-gradient(160deg,#dfe6ed,#c9d3dd)');
+    // 지금 사진과 앞뒤 사진만 먼저 불러오고, 나머지는 넘길 때 불러옴
+    this._heroSeen = this._heroSeen || {};
+    const nH = heroSlides.length;
+    [heroIdx, (heroIdx + 1) % (nH || 1), (heroIdx - 1 + nH) % (nH || 1)].forEach(i => { if (heroSlides[i]) this._heroSeen[heroSlides[i].url] = true; });
+    const HERO_EASE = 'transform .38s cubic-bezier(.22,.68,.24,1)';
+    v.heroTrackStyle = `position:absolute;inset:0;display:flex;transform:translateX(-${heroIdx * 100}%);transition:${HERO_EASE};will-change:transform`;
+    v.heroSlideList = heroSlides.map(sl => ({
+      style: 'flex:0 0 100%;height:100%;' + (this._heroSeen[sl.url] ? `background:url("${sl.url}") ${sl.pos || 'center'}/cover no-repeat` : '')
+    }));
+    v.heroPointerDown = e => {
+      if (nH < 2 || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      if (e.target.closest && e.target.closest('button')) return;
+      const el = e.currentTarget;
+      this._hd = { x: e.clientX, y: e.clientY, w: el.clientWidth || 1, el, track: el.querySelector('.rs-hero-track'), dx: 0, active: false, id: e.pointerId };
+    };
+    v.heroPointerMove = e => {
+      const d = this._hd;
+      if (!d) return;
+      const dx = e.clientX - d.x, dy = e.clientY - d.y;
+      if (!d.active) {
+        if (Math.abs(dx) < 8) return;
+        if (Math.abs(dy) > Math.abs(dx)) { this._hd = null; return; }   // 세로 스크롤은 그대로
+        d.active = true;
+        try { d.el.setPointerCapture(d.id); } catch (_) {}
+      }
+      d.dx = dx;
+      if (d.track) { d.track.style.transition = 'none'; d.track.style.transform = `translateX(calc(${-heroIdx * 100}% + ${dx}px))`; }
+    };
+    v.heroPointerUp = () => {
+      const d = this._hd;
+      this._hd = null;
+      if (!d || !d.active) return;
+      const th = Math.min(70, d.w * 0.15);
+      const next = d.dx < -th ? (heroIdx + 1) % nH : d.dx > th ? (heroIdx - 1 + nH) % nH : heroIdx;
+      if (d.track) { d.track.style.transition = HERO_EASE; d.track.style.transform = `translateX(-${next * 100}%)`; }
+      if (next !== heroIdx) this.setState({ heroIdx: next });
+    };
     v.heroPlaceholderStyle = curHero ? 'display:none' : 'font-size:13px;font-weight:600;color:#6b7684';
     v.heroArrowWrapStyle = heroSlides.length > 1 ? 'position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 14px;pointer-events:none' : 'display:none';
     v.heroDotsWrapStyle = heroSlides.length > 1 ? 'position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:5px' : 'display:none';
@@ -2667,9 +2737,9 @@ class Component extends DCLogic {
       e.target.value = '';
       if (!file || !this.sb || s.heroPhotoUploading) return;
       if (!file.type.startsWith('image/')) { this.toast('이미지 파일만 업로드할 수 있어요', 'err'); return; }
-      if (file.size > 8 * 1024 * 1024) { this.toast('8MB 이하 이미지만 올릴 수 있어요', 'err'); return; }
+      if (file.size > 40 * 1024 * 1024) { this.toast('40MB 이하 이미지만 올릴 수 있어요', 'err'); return; }
       this.setState({ heroPhotoUploading: true });
-      this.sb.uploadFile(file).then(url => {
+      shrinkImage(file).then(sf => this.sb.uploadFile(sf)).then(url => {
         this.setState({ heroPhotoUploading: false });
         this.setCfg('heroPhoto', url);
         this.toast('사진을 올렸어요. "저장하고 홈페이지 보기"를 눌러 반영하세요');
@@ -2735,16 +2805,39 @@ class Component extends DCLogic {
         onClick: () => writeGal(gal.map((x, j) => (j === i ? { ...x, pos: p } : x)))
       }))
     }));
+    v.optimizeLabel = s.galleryOptimizing ? '사진 줄이는 중… (잠시만요)' : '⚡ 기존 스틸컷 가볍게 만들기 (홈페이지 빠르게)';
+    v.optimizeGallery = () => {
+      if (!this.sb || this.state.galleryOptimizing) return;
+      const list = (this.state.config.gallery || []).map(g => (typeof g === 'string' ? { url: g, pos: 'center' } : g));
+      if (!list.length) { this.toast('스틸컷이 없어요', 'err'); return; }
+      this.setState({ galleryOptimizing: true });
+      (async () => {
+        let changed = 0; const out = [];
+        for (const g of list) {
+          try {
+            const blob = await (await fetch(g.url)).blob();
+            const name = (decodeURIComponent(g.url.split('/').pop() || 'still.jpg')).replace(/[^\w.\-]/g, '_');
+            const f = new File([blob], name, { type: blob.type || 'image/jpeg' });
+            const small = await shrinkImage(f);
+            if (small !== f && small.size < f.size * 0.8) { out.push({ ...g, url: await this.sb.uploadFile(small) }); changed++; }
+            else out.push(g);
+          } catch (e) { out.push(g); }
+        }
+        this.setState({ galleryOptimizing: false });
+        if (changed) { this.setCfg('gallery', out); this.toast(`${changed}장을 가볍게 만들었어요. 아래 "저장하고 홈페이지 보기"를 눌러 반영하세요`); }
+        else this.toast('이미 가벼운 사진들이에요');
+      })();
+    };
     v.galleryUploadLabel = s.galleryUploading ? '올리는 중…' : '+ 스틸컷 추가 (여러 장 선택 가능)';
     v.galleryUploadStyle = `display:flex;align-items:center;justify-content:center;padding:12px;border-radius:12px;border:1px dashed #d1d6db;cursor:${s.galleryUploading ? 'default' : 'pointer'};font-size:13px;font-weight:700;color:${s.galleryUploading ? '#b0b8c1' : '#4e5968'};background:#fff`;
     v.onGalleryUpload = e => {
       const files = Array.from(e.target.files || []);
       e.target.value = '';
       if (!files.length || !this.sb || s.galleryUploading) return;
-      const tooBig = files.find(f => f.size > 8 * 1024 * 1024);
-      if (tooBig) { this.toast('8MB 이하 이미지만 올릴 수 있어요', 'err'); return; }
+      const tooBig = files.find(f => f.size > 40 * 1024 * 1024);
+      if (tooBig) { this.toast('40MB 이하 이미지만 올릴 수 있어요', 'err'); return; }
       this.setState({ galleryUploading: true });
-      Promise.all(files.map(f => this.sb.uploadFile(f))).then(urls => {
+      Promise.all(files.map(f => shrinkImage(f).then(sf => this.sb.uploadFile(sf)))).then(urls => {
         this.setState({ galleryUploading: false });
         this.setCfg('gallery', [...(this.state.config.gallery || []), ...urls.map(u => ({ url: u, pos: 'center' }))]);
         this.toast('스틸컷을 올렸어요. "저장하고 홈페이지 보기"를 눌러 반영하세요');
