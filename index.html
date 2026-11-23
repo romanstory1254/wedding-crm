@@ -3,6 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로맨스토리 | 본식DVD · 웨딩영상 · 프리웨딩 (서울·경기·인천)</title>
+<meta name="description" content="1인 대표가 상담·촬영·편집을 모두 직접 맡는 본식DVD·웨딩영상 스튜디오 로맨스토리. 월 8팀 한정, 전 상품 4K 촬영, 촬영일 기준 1개월 이내 USB 납품. 서울·경기(일부)·인천 출장비 무료.">
+<meta name="keywords" content="본식DVD, 본식영상, 웨딩영상, 웨딩DVD, 프리웨딩 영상, 결혼식 영상, 서울 본식DVD, 경기 본식DVD, 인천 본식DVD, 로맨스토리">
+<link rel="canonical" href="https://roman-story.com/">
+<link rel="icon" href="https://roman-story.com/assets/logo.png">
+<link rel="apple-touch-icon" href="https://roman-story.com/assets/logo.png">
+<meta name="theme-color" content="#0c0b18">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="로맨스토리">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="https://roman-story.com/">
+<meta property="og:title" content="로맨스토리 | 본식DVD · 웨딩영상 · 프리웨딩">
+<meta property="og:description" content="1인 대표 직접 촬영·편집 · 월 8팀 한정 · 전 상품 4K. 예식일 잔여 일정을 바로 확인해 보세요.">
+<meta property="og:image" content="https://roman-story.com/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"로맨스토리","alternateName":"Romanstory","description":"1인 대표가 직접 촬영·편집하는 본식DVD·웨딩영상 스튜디오","url":"https://roman-story.com/","image":"https://roman-story.com/assets/og-image.jpg","logo":"https://roman-story.com/assets/logo.png","areaServed":["서울","경기","인천"],"sameAs":["https://www.instagram.com/romanstory_wedding"]}</script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -1864,6 +1882,19 @@ class Component extends DCLogic {
     }
   };
   setCfg = (k, v) => this.setState(s => ({ config: { ...s.config, [k]: v } }));
+  // 유튜브 썸네일: 고화질(1280x720)이 실제로 있으면 그것을, 없으면 기본(480x360)을 사용
+  thumbFor = id => {
+    this._tq = this._tq || {};
+    if (this._tq[id] === undefined) {
+      this._tq[id] = 'hq';
+      try {
+        const im = new Image();
+        im.onload = () => { if (im.naturalWidth > 200) { this._tq[id] = 'max'; this.setState(st => ({ thumbTick: (st.thumbTick || 0) + 1 })); } };
+        im.src = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+      } catch (e) {}
+    }
+    return this._tq[id] === 'max' ? `https://i.ytimg.com/vi/${id}/maxresdefault.jpg` : `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+  };
   fmtDate = d => { const p = String(d).split('-'); return p.length === 3 ? `${p[0]}.${p[1]}.${p[2]}` : d; };
   balance = p => Math.max(0, (p.amount || 0) - (p.paid || 0));
   copy = text => {
@@ -2662,7 +2693,7 @@ class Component extends DCLogic {
     }));
     v.portfolioCards = (c.videos || []).filter(x => !v.showPfTabs || vidCat(x) === pfCur).map(vid => {
       const m = String(vid.url || '').match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
-      const thumb = m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : TRANSPARENT_PX;
+      const thumb = m ? this.thumbFor(m[1]) : TRANSPARENT_PX;
       return {
         title: vid.title, url: m ? `https://www.youtube.com/watch?v=${m[1]}` : vid.url,
         thumbStyle: m ? `position:absolute;inset:0;background:#191f28 center/cover no-repeat url("${thumb}")` : 'display:none'
