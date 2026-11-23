@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
     const text =
       `📸 새 예약 문의\n` +
       `${record.bride} · ${record.groom}\n` +
-      `${record.wedding_date} · ${record.venue ?? "장소 미정"}\n` +
+      `${record.wedding_date}${record.wedding_time ? " " + record.wedding_time : ""} · ${record.venue ?? "장소 미정"}\n` +
       `${record.package_name ?? ""} · ${record.amount?.toLocaleString?.() ?? record.amount}원\n` +
       `연락처: ${record.phone}`;
 
