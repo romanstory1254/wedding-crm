@@ -100,6 +100,13 @@ html.sky .r-pg [style*="border:2px solid #e5e8eb"]{border-color:rgba(242,140,80,
  background:rgba(44,29,19,.07);color:rgba(70,48,32,.6);transition:background .16s ease,color .16s ease}
 .rs-evt-x:hover{background:rgba(44,29,19,.14);color:#2c1d13}
 @media(max-width:600px){.rs-evt{right:12px;left:12px;bottom:12px;width:auto;padding:18px 18px 16px}}
+.rs-evt.rs-evt-open{animation-delay:0s;animation-duration:.28s}
+.rs-evt.rs-evt-mini{display:flex;align-items:center;gap:6px;width:380px;padding:6px 8px 6px 6px;border-radius:16px}
+.rs-evt-mini-main{display:flex;align-items:center;gap:10px;flex:1;min-width:0;min-height:44px;padding:0 6px 0 10px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.rs-evt-mini-main .rs-evt-kicker{font-size:12px}
+.rs-evt-mini-text{flex:1;min-width:0;margin:0!important;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs-evt.rs-evt-mini .rs-evt-x{position:static;flex-shrink:0;width:32px;height:32px}
+@media(max-width:600px){.rs-evt.rs-evt-mini{width:auto;padding:6px 8px 6px 6px}}
 @media (prefers-reduced-motion:reduce){.rs-evt{animation:none}}
 .rs-faq-q{display:flex;align-items:center;gap:12px;width:100%;padding:18px 16px;border:0;background:transparent;cursor:pointer;transition:background .16s ease}
 .rs-faq-q:hover{background:rgba(242,104,28,.06)}
@@ -176,14 +183,24 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
 </div>
 
 <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
-<sc-if value="{{ showBanner }}" hint-placeholder-val="{{ false }}">
-  <div class="rs-evt" style="{{ evtSwipeStyle }}" onTouchStart="{{ evtTouchStart }}" onTouchMove="{{ evtTouchMove }}" onTouchEnd="{{ evtTouchEnd }}">
+<sc-if value="{{ showBannerMini }}" hint-placeholder-val="{{ false }}">
+  <div class="rs-evt rs-evt-mini" style="{{ evtSwipeStyle }}" onTouchStart="{{ evtTouchStart }}" onTouchMove="{{ evtTouchMove }}" onTouchEnd="{{ evtTouchEnd }}">
+    <button type="button" class="rs-evt-mini-main" onClick="{{ openBanner }}" aria-label="이벤트 자세히 보기">
+      <span class="rs-evt-kicker" style="flex-shrink:0">Event</span>
+      <span class="rs-evt-body rs-evt-mini-text">{{ config.eventBanner }}</span>
+      <span class="rs-evt-kicker" style="flex-shrink:0;letter-spacing:0;text-transform:none">자세히 ›</span>
+    </button>
+    <button type="button" class="rs-evt-x" onClick="{{ dismissBanner }}" aria-label="닫기">×</button>
+  </div>
+</sc-if>
+<sc-if value="{{ showBannerFull }}" hint-placeholder-val="{{ false }}">
+  <div class="rs-evt rs-evt-open" style="{{ evtSwipeStyle }}" onTouchStart="{{ evtTouchStart }}" onTouchMove="{{ evtTouchMove }}" onTouchEnd="{{ evtTouchEnd }}">
     <button type="button" class="rs-evt-x" onClick="{{ dismissBanner }}" aria-label="닫기">×</button>
     <div class="rs-evt-kicker">Open Event</div>
     <div class="rs-evt-body">{{ config.eventBanner }}</div>
     <button type="button" onClick="{{ hideBannerToday }}" style="margin-top:10px;padding:0;border:0;background:none;font:inherit;font-size:12px;font-weight:600;color:inherit;opacity:.7;text-decoration:underline;cursor:pointer">오늘 하루 보지 않기</button>
     <button type="button" class="rs-evt-cta" onClick="{{ goBookingFromBanner }}">예약 문의하기</button>
-    <div style="margin-top:8px;font-size:11px;font-weight:500;color:rgba(60,40,28,.42);text-align:center">옆으로 넘겨서 닫기</div>
+    <button type="button" onClick="{{ foldBanner }}" style="display:block;width:100%;margin-top:6px;min-height:36px;padding:0;border:0;background:none;font:inherit;font-size:13px;font-weight:600;color:inherit;opacity:.75;cursor:pointer">접기 ︿</button>
   </div>
 </sc-if>
 <div class="r-pg" style="max-width:1120px;margin:0 auto;padding:0 20px 80px">
@@ -254,6 +271,13 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
 
   <div id="sec-portfolio" class="rs-rev" style="margin-top:36px;scroll-margin-top:80px">
     <h2 style="margin:0 0 18px;font-size:clamp(19px,3vw,22px);font-weight:800;letter-spacing:-.03em">포트폴리오</h2>
+    <sc-if value="{{ showPfTabs }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 18px">
+        <sc-for list="{{ pfTabs }}" as="t" hint-placeholder-count="2">
+          <button type="button" onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+    </sc-if>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
       <sc-for list="{{ portfolioCards }}" as="v" hint-placeholder-count="3">
         <a href="{{ v.url }}" target="_blank" rel="noopener" class="t-card" style="display:block;padding:14px;text-decoration:none;color:inherit">
@@ -470,7 +494,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
       </sc-for>
       <div style="margin:6px 16px 14px;padding:16px 18px;border-radius:14px;background:rgba(255,178,90,.1);box-shadow:inset 0 0 0 1px rgba(255,178,90,.2)">
         <div style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#ffab72">출장비 안내</div>
-        <div style="margin-top:8px;font-size:13.5px;line-height:1.72;font-weight:500">출장비는 최소한의 비용(유류비 + 통행료)만 받고 있습니다.<br>서울 · 경기 · 인천은 무료이며, 그 외 지역은 거리별로 안내드립니다.</div>
+        <div style="margin-top:8px;font-size:13.5px;line-height:1.72;font-weight:500">출장비는 최소한의 비용(유류비 + 통행료)만 받고 있습니다.<br>서울 · 경기(일부) · 인천은 무료이며, 그 외 지역은 거리별로 안내드립니다.</div>
       </div>
     </div>
   </div>
@@ -597,7 +621,7 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
       <div class="t-card" style="margin-top:16px;padding:28px">
         <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">증빙 서류</div>
         <div style="margin-top:4px;margin-bottom:18px;font-size:12.5px;font-weight:500;color:#8b95a1">입금 완료 후 신청해 주시면 확인 후 발급해 드려요.</div>
-        <sc-if value="{{ !receiptSent }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ receiptNotSent }}" hint-placeholder-val="{{ true }}">
           <div>
             <div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:20px">
               <sc-for list="{{ receiptDocKinds }}" as="rk" hint-placeholder-count="3">
@@ -629,16 +653,20 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
 
             <sc-if value="{{ receiptIsTax }}" hint-placeholder-val="{{ false }}">
               <div>
-                <div style="margin-top:6px;margin-bottom:8px;font-size:13px;font-weight:800;color:#191f28">사업자 정보</div>
-                <div style="margin-bottom:12px"><span class="t-lb">사업자등록번호</span><input class="t-in" value="{{ receiptForm.bizNo }}" onChange="{{ setReceiptBizNo }}" placeholder="숫자만 입력"></div>
-                <div style="margin-bottom:12px"><span class="t-lb">상호명(회사명)</span><input class="t-in" value="{{ receiptForm.bizName }}" onChange="{{ setReceiptBizName }}"></div>
-                <div style="margin-bottom:12px"><span class="t-lb">대표자명</span><input class="t-in" value="{{ receiptForm.ceoName }}" onChange="{{ setReceiptCeoName }}"></div>
-                <div style="margin-bottom:12px"><span class="t-lb">사업장 소재지</span><input class="t-in" value="{{ receiptForm.bizAddr }}" onChange="{{ setReceiptBizAddr }}"></div>
-                <div style="margin-bottom:16px"><span class="t-lb">업태 / 종목</span><input class="t-in" value="{{ receiptForm.bizType }}" onChange="{{ setReceiptBizType }}" placeholder="서비스 / 영상제작"></div>
-                <div style="margin-top:6px;margin-bottom:8px;font-size:13px;font-weight:800;color:#191f28">담당자 정보</div>
-                <div style="margin-bottom:12px"><span class="t-lb">담당자명</span><input class="t-in" value="{{ receiptForm.contactName }}" onChange="{{ setReceiptContactName }}"></div>
-                <div style="margin-bottom:12px"><span class="t-lb">담당자 전화번호</span><input class="t-in" value="{{ receiptForm.contactPhone }}" onChange="{{ setReceiptContactPhone }}" placeholder="숫자만 입력"></div>
-                <div><span class="t-lb">세금계산서 수신 이메일</span><input class="t-in" value="{{ receiptForm.email }}" onChange="{{ setReceiptEmail }}" placeholder="example@email.com"></div>
+                <div style="margin-top:2px;margin-bottom:14px;padding:12px 14px;border-radius:12px;background:#f2f4f6;font-size:13px;line-height:1.6;font-weight:600;color:#4e5968">사업자등록증 사진과 이메일만 보내주세요.<br>나머지 정보는 저희가 확인해서 발급해 드려요.</div>
+                <span class="t-lb">사업자등록증</span>
+                <sc-if value="{{ receiptHasCert }}" hint-placeholder-val="{{ false }}">
+                  <a href="{{ receiptForm.certUrl }}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:12px 14px;border-radius:12px;background:#e8f3ff;font-size:13.5px;font-weight:700;color:#1b64da;text-decoration:none">
+                    <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✓ {{ receiptForm.certName }}</span>
+                    <span style="font-size:12px;font-weight:600">확인</span>
+                  </a>
+                </sc-if>
+                <label style="{{ receiptCertStyle }}">
+                  <input type="file" onChange="{{ onReceiptCert }}" accept="image/*,.pdf" style="display:none">
+                  {{ receiptCertLabel }}
+                </label>
+                <div style="margin-top:6px;margin-bottom:16px;font-size:12px;line-height:1.6;font-weight:500;color:#8b95a1">사진 · 캡처 · PDF 모두 괜찮아요. 글자가 잘 보이게 찍어주세요.</div>
+                <div><span class="t-lb">세금계산서 받을 이메일</span><input class="t-in" type="email" value="{{ receiptForm.email }}" onChange="{{ setReceiptEmail }}" placeholder="example@email.com"></div>
               </div>
             </sc-if>
 
@@ -1025,6 +1053,9 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
                   </div>
                   <div style="display:flex;gap:8px;margin-top:12px">
                     <button type="button" class="t-btn t-pri" style="flex:1;padding:9px 12px;font-size:12.5px" onClick="{{ rq.onToggle }}">{{ rq.toggleText }}</button>
+                    <sc-if value="{{ rq.hasCert }}" hint-placeholder-val="{{ false }}">
+                      <a href="{{ rq.certUrl }}" target="_blank" rel="noopener" class="t-btn" style="padding:9px 12px;font-size:12.5px;text-decoration:none;display:inline-flex;align-items:center">사업자등록증 보기</a>
+                    </sc-if>
                     <button type="button" class="t-btn" style="padding:9px 12px;font-size:12.5px" onClick="{{ rq.onOpen }}">예약 상세</button>
                   </div>
                 </div>
@@ -1178,13 +1209,31 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
         <div class="t-card" style="margin-top:16px;padding:28px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <div style="font-size:15px;font-weight:700;letter-spacing:-.02em">포트폴리오 영상</div>
-            <button type="button" onClick="{{ addVideo }}" style="padding:8px 14px;border:0;border-radius:10px;background:#eef2ff;color:#3182f6;font-size:13px;font-weight:700;cursor:pointer">+ 영상 추가</button>
+            <button type="button" onClick="{{ addVideoCat }}" style="padding:8px 14px;border:0;border-radius:10px;background:#f2f4f6;color:#4e5968;font-size:13px;font-weight:700;cursor:pointer">+ 분류 추가</button>
           </div>
-          <sc-for list="{{ videoRows }}" as="v" hint-placeholder-count="3">
-            <div style="position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px;padding-right:36px">
-              <input class="t-in" value="{{ v.title }}" onChange="{{ v.onTitle }}" placeholder="영상 제목">
-              <input class="t-in" value="{{ v.url }}" onChange="{{ v.onUrl }}" placeholder="유튜브 링크">
-              <button type="button" onClick="{{ v.onRemove }}" style="position:absolute;top:4px;right:0;width:26px;height:26px;border:0;border-radius:999px;background:rgba(25,31,40,.08);color:#6b7684;font-size:14px;font-weight:700;cursor:pointer;line-height:1">×</button>
+          <div style="margin:-6px 0 14px;font-size:13px;color:#8b95a1;line-height:1.6">분류별로 영상을 나눠 올리면 홈페이지에 탭으로 나뉘어 보여요. 영상이 없는 분류는 홈페이지에 표시되지 않아요.</div>
+          <sc-for list="{{ videoGroups }}" as="g" hint-placeholder-count="2">
+            <div style="padding:16px;margin-bottom:12px;background:#f9fafb;border-radius:16px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                <input class="t-in" value="{{ g.name }}" onChange="{{ g.onName }}" placeholder="분류 이름 (예: 본식 하이라이트)" style="flex:1;font-weight:700">
+                <span style="flex-shrink:0;font-size:13px;color:#8b95a1">{{ g.count }}</span>
+                <sc-if value="{{ g.canRemove }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ g.onRemoveCat }}" style="flex-shrink:0;padding:8px 10px;border:0;border-radius:10px;background:#fff0f0;color:#f04452;font-size:12px;font-weight:700;cursor:pointer">분류 삭제</button>
+                </sc-if>
+              </div>
+              <sc-for list="{{ g.rows }}" as="v" hint-placeholder-count="2">
+                <div style="position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px;padding-right:36px">
+                  <input class="t-in" value="{{ v.title }}" onChange="{{ v.onTitle }}" placeholder="영상 제목">
+                  <input class="t-in" value="{{ v.url }}" onChange="{{ v.onUrl }}" placeholder="유튜브 링크">
+                  <select class="t-in" value="{{ v.cat }}" onChange="{{ v.onCat }}">
+                    <sc-for list="{{ v.catOptions }}" as="o" hint-placeholder-count="2">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                  <button type="button" onClick="{{ v.onRemove }}" style="position:absolute;top:4px;right:0;width:26px;height:26px;border:0;border-radius:999px;background:rgba(25,31,40,.08);color:#6b7684;font-size:14px;font-weight:700;cursor:pointer;line-height:1">×</button>
+                </div>
+              </sc-for>
+              <button type="button" onClick="{{ g.onAdd }}" style="width:100%;padding:11px;border:1px dashed #c9d2dc;border-radius:12px;background:#fff;color:#3182f6;font-size:13px;font-weight:700;cursor:pointer">+ {{ g.name }} 영상 추가</button>
             </div>
           </sc-for>
         </div>
@@ -1280,6 +1329,9 @@ textarea.t-in{min-height:104px;resize:vertical;line-height:1.6}
               <sc-for list="{{ detail.receiptLines }}" as="rl" hint-placeholder-count="3">
                 <div style="font-size:13px;line-height:1.6"><span style="font-weight:700;color:#4e5968">{{ rl.k }}</span> · {{ rl.v }}</div>
               </sc-for>
+              <sc-if value="{{ detail.receiptHasCert }}" hint-placeholder-val="{{ false }}">
+                <a href="{{ detail.receiptCertUrl }}" target="_blank" rel="noopener" style="margin-top:4px;display:inline-block;padding:9px 12px;border-radius:10px;background:#e8f3ff;color:#1b64da;font-size:13px;font-weight:700;text-decoration:none">사업자등록증 보기</a>
+              </sc-if>
             </div>
           </div>
         </sc-if>
@@ -1539,7 +1591,7 @@ class Component extends DCLogic {
     contractId: null,
     contractDraft: null,
     toasts: [],
-    booking: (() => { try { const saved = JSON.parse(localStorage.getItem('rs_booking_draft') || 'null'); return saved && typeof saved === 'object' ? { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '', ...saved } : { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' }; } catch (e) { return { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: false, memo: '', travel: '', source: '', snapStudio: '' }; } })(),
+    booking: (() => { try { const saved = JSON.parse(localStorage.getItem('rs_booking_draft') || 'null'); return saved && typeof saved === 'object' ? { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: true, memo: '', travel: '', source: '', snapStudio: '', ...saved } : { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: true, memo: '', travel: '', source: '', snapStudio: '' }; } catch (e) { return { groom: '', bride: '', phone: '', date: '', time: '', venue: '', pkg: 'signature', options: [], sns: true, memo: '', travel: '', source: '', snapStudio: '' }; } })(),
     formTouched: false,
     submitted: false,
     authed: false, adminEmail: '', loginForm: { email: '', password: '' }, loginError: '', loggingIn: false,
@@ -1555,7 +1607,7 @@ class Component extends DCLogic {
     clientForm: { name: '', phone: '' },
     payForm: { name: '', phone: '' },
     payId: null, payKind: 'deposit', payError: '',
-    receiptForm: { doc: 'cash', purpose: 'personal', phone: '', bizName: '', bizNo: '', ceoName: '', bizAddr: '', bizType: '', contactName: '', contactPhone: '', email: '' }, receiptError: '', receiptSent: false,
+    receiptForm: { doc: 'cash', purpose: 'personal', phone: '', bizName: '', bizNo: '', ceoName: '', bizAddr: '', bizType: '', contactName: '', contactPhone: '', email: '', certUrl: '', certName: '' }, receiptError: '', receiptSent: false, receiptUploading: false,
     clientId: null,
     clientError: '',
     config: {
@@ -1563,7 +1615,7 @@ class Component extends DCLogic {
       heroTitle: '모든 사랑에는\n저마다의 서사가 있다.',
       heroSub: '상담부터 촬영, 편집까지 대표가 직접 진행합니다. 알바나 외주 인력을 일체 쓰지 않고, 전 상품 4K 촬영으로 진행해 촬영일 기준 1개월 이내에 USB로 보내드려요.',
       eventBanner: '🎁 오픈 이벤트 — 시그니처·프레스티지 예약 시 프리웨딩 촬영 + 하이라이트 편집본 무료 (~2026.08.31 예약일 기준)',
-      philosophy: '두 분이 보지 못하는 곳의 진짜 비하인드.\n대기실과 홀에 계시느라 놓치기 쉬운 하객분들의 진짜 표정을, 포토테이블에 숨겨진 무인캠으로 담아드립니다.\n베이직·시그니처·프레스티지 전 상품에 추가 비용 없이 기본 제공돼요.',      notice: '· 예약금 10만원 입금 시 예약 확정 (선착순 · 입금 시점 기준)\n· 잔금은 예식일 1주일 전까지\n· 촬영일 기준 1개월 이내 USB 택배 발송\n· 원본은 납품 후 1개월 보관 후 순차 삭제 — 꼭 백업해 주세요\n· 스냅 업체와 동행 촬영에 한해 진행 (영상 단독 촬영 불가)\n· 수도권 출장비 무료 / 충청·강원 7~10만 · 경상·전라 15~20만 · 제주 협의',
+      philosophy: '두 분이 보지 못하는 곳의 진짜 비하인드.\n대기실과 홀에 계시느라 놓치기 쉬운 하객분들의 진짜 표정을, 포토테이블에 숨겨진 무인캠으로 담아드립니다.\n베이직·시그니처·프레스티지 전 상품에 추가 비용 없이 기본 제공돼요.',      notice: '· 예약금 10만원 입금 시 예약 확정 (선착순 · 입금 시점 기준)\n· 잔금은 예식일 1주일 전까지\n· 촬영일 기준 1개월 이내 USB 택배 발송\n· 원본은 납품 후 1개월 보관 후 순차 삭제 — 꼭 백업해 주세요\n· 서울·경기(일부)·인천 출장비 무료 / 충청·강원 7~10만 · 경상·전라 15~20만 · 제주 협의',
       reviews: [
         { body: '진짜 업체 열 군데는 비교했어요ㅎㅎ 근데 여기가 대표님이 직접 다 하신다고 해서 믿고 맡겼는데 정말 잘한 선택이었어요 👍 당일에 어디 계신지도 모를 만큼 조용히 다니시더니 놓친 장면이 하나도 없더라구요.. 엄마가 영상 보다가 우셨어요 🥹', meta: '2025.09 · 고려대학교 교우회관' },
         { body: '저희 홀 진짜 어두워서 영상 망하면 어쩌지 걱정 엄청 했는데요, 완성본 받고 좀 놀랐어요 😮 색감이 그냥 찍은 느낌이 아니라 영화 같아요! 하이라이트는 저장해두고 몇 번 봤는지 모르겠어요ㅎㅎ', meta: '2025.11 · 잠실 더 베네치아' },
@@ -1572,6 +1624,7 @@ class Component extends DCLogic {
         { body: '홀이 워낙 넓어서 촬영 동선 걱정을 제일 많이 했는데요, 대표님이 미리 홀 도면까지 확인하고 오셨더라구요 😮 덕분에 하객분들 시야 하나도 안 가리고 진행됐어요. 예식 담당자분도 촬영팀 중에 제일 프로 같다고 하셨어요ㅎㅎ', meta: '2026.05 · 공군호텔 웨딩홀' },
         { body: '영상 할까 말까 진짜 끝까지 고민했어요.. 예산도 그렇고 굳이 필요한가 싶어서요. 근데 완성본 보자마자 하길 잘했다 싶었어요 ✨ 사진엔 없는 그날 소리가 다 남아있어요. 축가 부를 때 목소리 떨리는 것까지 들려요ㅎㅎ 부모님께 USB로 드렸는데 계속 보신다고 하셔요 🧡', meta: '2026.06 · 티웨딩홀' }
       ],
+      videoCats: ['본식 하이라이트', '프리웨딩'],
       videos: [
         { title: '본식 하이라이트 샘플 01', url: 'https://youtu.be/9_DE15gaz08' },
         { title: '본식 하이라이트 샘플 02', url: 'https://youtu.be/dKPlWnB67Xk' },
@@ -1588,7 +1641,7 @@ class Component extends DCLogic {
       packages: [
         { id: 'basic', tier: 'Basic · 기록형', name: '베이직', price: 490000, sns: 40000,
           shoot: ['1인 2캠 (4K)'],
-          edit: ['신부대기실 · 본식 · 원판촬영 챕터별 풀영상 제공', '하이라이트 3~5분 (BGM)'],
+          edit: ['신부대기실 · 본식 · 원판촬영 챕터별 풀영상 제공', '하이라이트 영상 미제공'],
           note: '※ 짐벌 촬영 미포함' },
         { id: 'signature', tier: 'Signature · BEST', name: '시그니처', price: 590000, sns: 40000,
           shoot: ['1인 3캠 · 고정 2 + 짐벌 1 (4K)'],
@@ -1609,6 +1662,7 @@ class Component extends DCLogic {
         { id: 'metro1', name: '수도권 일부 (서울, 구리, 하남, 성남, 광명, 부천)', price: 0, note: '무료' },
         { id: 'gyeonggiA', name: '경기A (인천, 안양, 과천, 의왕, 군포, 남양주, 의정부, 고양)', price: 0, note: '무료' },
         { id: 'gyeonggiB', name: '경기B (용인, 수원, 화성, 안산, 시흥, 파주, 김포, 평택)', price: 0, note: '무료' },
+        { id: 'gyeonggiOuter', name: '경기 외곽 (포천, 동두천, 연천, 가평, 양평, 여주, 이천, 안성)', price: 50000, note: '5만 원' },
         { id: 'cw', name: '충청 / 강원 (천안, 청주, 대전, 원주, 춘천)', price: 100000, note: '7~10만 원' },
         { id: 'gj', name: '경상 / 전라 (대구, 부산, 광주, 울산, 전주)', price: 200000, note: '15~20만 원' },
         { id: 'jeju', name: '제주 (제주도 전 지역)', price: 0, note: '별도 협의' }
@@ -1707,6 +1761,20 @@ class Component extends DCLogic {
           });
           return out;
         };
+        const OUTER = { id: 'gyeonggiOuter', name: '경기 외곽 (포천, 동두천, 연천, 가평, 양평, 여주, 이천, 안성)', price: 50000, note: '5만 원' };
+        if (all.pricing && Array.isArray(all.pricing.travelZones)) {
+          let tz = all.pricing.travelZones.filter(z => z.id !== OUTER.id).map(z =>
+            z.id === 'metro' && /경기/.test(z.name || '') && !/외곽/.test(z.name || '')
+              ? { ...z, name: '수도권 (서울·인천·경기 일부, 경기 외곽 제외)' } : z);
+          let at = tz.findIndex(z => z.id === 'gyeonggiB');
+          if (at < 0) at = tz.findIndex(z => z.id === 'metro');
+          if (at < 0) at = tz.findIndex(z => z.price === 0 || /무료|없음/.test(z.note || ''));
+          tz.splice(at >= 0 ? at + 1 : 0, 0, OUTER);
+          all.pricing = { ...all.pricing, travelZones: tz };
+        }
+        if (all.homepage && typeof all.homepage.notice === 'string') {
+          all.homepage = { ...all.homepage, notice: all.homepage.notice.split('\n').filter(l => !/스냅 업체와 동행 촬영에 한해/.test(l)).join('\n').replace('수도권 출장비 무료', '서울·경기(일부)·인천 출장비 무료') };
+        }
         this.setState(s => ({ config: merge(merge(merge(s.config, all.homepage), all.pricing), all.checklist ? { checklist: all.checklist } : null), calNotes: all.calendar || {}, dbReady: true, legacy: sb.legacyMode, noStudio: !sb.legacyMode && !Object.keys(all).length, contentSeeded: !!(all.homepage && Object.keys(all.homepage).length) }));
       }).catch(e => this.setState({ dbError: String(e.message || e) }));
       this.refreshPublic();
@@ -1839,7 +1907,8 @@ class Component extends DCLogic {
       ['알바생, 노쇼가 발생하지 않을까요?', '촬영부터 편집까지 모두 제가 직접 진행합니다.\n하루 한 커플만 촬영하여 퀄리티를 보장합니다.'],
       ['완성본은 언제 받을 수 있나요?', '최대 1개월 이내 전달드립니다.'],
       ['어두운 홀도 촬영 가능한가요?', '물론 가능합니다.\nLOG 촬영으로 최대 효율을 사용해 자연스럽게 담아드립니다.'],
-      ['추가 비용이 발생할 수 있나요?', '촬영 전 모든 내용을 안내드리며, 추가 비용이 발생하는 경우 사전에 안내드립니다.']
+      ['추가 비용이 발생할 수 있나요?', '촬영 전 모든 내용을 안내드리며, 추가 비용이 발생하는 경우 사전에 안내드립니다.'],
+      ['현금영수증 발급이 가능한가요?', '네, 가능합니다.\n잔금 정산이 완료된 후 현금영수증(소득공제 · 지출증빙) 또는 세금계산서를 발급해 드립니다.\n결제 탭에서 예약 조회 후 증빙 서류 신청서를 작성해 주세요.']
     ];
     v.faqRows = FAQ.map(([q, a], i) => {
       const open = s.faqOpen === i;
@@ -1854,6 +1923,10 @@ class Component extends DCLogic {
       };
     });
     v.showBanner = (this.props.showEventBanner ?? true) && (c.eventBannerEnabled !== false) && !!c.eventBanner && !s.bannerClosed;
+    v.showBannerFull = v.showBanner && !!s.bannerOpen;
+    v.showBannerMini = v.showBanner && !s.bannerOpen;
+    v.openBanner = () => this.setState({ bannerOpen: true });
+    v.foldBanner = () => this.setState({ bannerOpen: false });
     const bannerOn = c.eventBannerEnabled !== false;
     v.bannerStateLabel = bannerOn ? '켜짐' : '꺼짐';
     v.toggleBanner = () => this.setCfg('eventBannerEnabled', !bannerOn);
@@ -2006,6 +2079,8 @@ class Component extends DCLogic {
         return true;
       });
       shoot2 = shoot2.map(x => /드론/.test(x) && !/인트로/.test(x) ? '드론 촬영 (인트로)' : x);
+      // 베이직: 하이라이트 미제공 (저장된 예전 문구 보정)
+      if (p.id === 'basic') edit = edit.map(x => x === '하이라이트 3~5분 (BGM)' ? '하이라이트 영상 미제공' : x);
       // prestige always shows the highlight line like signature
       if (p.id === 'prestige' && !edit.some(x => /하이라이트/.test(x))) {
         const ci = edit.findIndex(x => /챕터별 풀영상/.test(x));
@@ -2194,7 +2269,7 @@ class Component extends DCLogic {
     } else v.pay = { ok: false };
 
     const rf = s.receiptForm;
-    v.receiptForm = rf; v.receiptError = s.receiptError; v.receiptSent = s.receiptSent;
+    v.receiptForm = rf; v.receiptError = s.receiptError; v.receiptSent = s.receiptSent; v.receiptNotSent = !s.receiptSent;
     v.receiptIsCash = rf.doc === 'cash';
     v.receiptIsTax = rf.doc === 'tax';
     v.receiptIsPersonal = rf.purpose === 'personal';
@@ -2219,12 +2294,27 @@ class Component extends DCLogic {
     v.setReceiptContactName = e => rset({ contactName: e.target.value });
     v.setReceiptContactPhone = e => rset({ contactPhone: e.target.value });
     v.setReceiptEmail = e => rset({ email: e.target.value });
+    v.receiptHasCert = !!rf.certUrl;
+    v.receiptCertLabel = s.receiptUploading ? '올리는 중…' : (rf.certUrl ? '다른 파일로 다시 올리기' : '📎 사업자등록증 올리기');
+    v.receiptCertStyle = `display:flex;align-items:center;justify-content:center;margin-top:8px;padding:14px;min-height:44px;box-sizing:border-box;border-radius:12px;border:1px dashed #b0b8c1;cursor:${s.receiptUploading ? 'default' : 'pointer'};font-size:14px;font-weight:700;color:${s.receiptUploading ? '#b0b8c1' : '#3182f6'};background:#fff`;
+    v.onReceiptCert = e => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file || !this.sb || !this.sb.uploadReceiptDoc || this.state.receiptUploading) return;
+      if (file.size > 20 * 1024 * 1024) { this.toast('20MB 이하 파일만 올릴 수 있어요', 'err'); return; }
+      this.setState({ receiptUploading: true, receiptError: '' });
+      this.sb.uploadReceiptDoc(file)
+        .then(url => { this.setState(st => ({ receiptUploading: false, receiptForm: { ...st.receiptForm, certUrl: url, certName: file.name } })); this.toast('사업자등록증을 올렸어요'); })
+        .catch(err => { this.setState({ receiptUploading: false }); this.toast(err.message || String(err), 'err'); });
+    };
     v.submitReceipt = () => {
       const f = this.state.receiptForm;
       let err = '';
       if (f.doc === 'cash' && f.purpose === 'personal' && !f.phone.trim()) err = '휴대폰번호를 입력해 주세요';
       if (f.doc === 'cash' && f.purpose === 'biz' && !f.bizNo.trim()) err = '사업자번호를 입력해 주세요';
-      if (f.doc === 'tax' && (!f.bizNo.trim() || !f.bizName.trim() || !f.ceoName.trim() || !f.email.trim())) err = '사업자등록번호·상호명·대표자명·이메일을 입력해 주세요';
+      if (f.doc === 'tax' && !f.certUrl) err = '사업자등록증을 올려주세요';
+      else if (f.doc === 'tax' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) err = '세금계산서 받을 이메일을 정확히 입력해 주세요';
+      if (this.state.receiptUploading) err = '사업자등록증을 올리는 중이에요. 잠시만 기다려 주세요';
       if (err) { this.setState({ receiptError: err }); return; }
       this.setState({ receiptError: '' });
       if (!pp || !this.sb || !this.sb.submitReceipt) { this.toast('연결 준비 중이에요', 'err'); return; }
@@ -2501,7 +2591,7 @@ class Component extends DCLogic {
           contractDraft: {
             clientName: p.name.split(' · ')[0], clientPhone: p.phone,
             y: String(dt.getFullYear()), m: String(dt.getMonth() + 1), d: String(dt.getDate()),
-            dow: this.WEEKDAYS[dt.getDay()], time: '12:30',
+            dow: this.WEEKDAYS[dt.getDay()], time: p.time || '',
             venue: p.venue || '', pkg: '본식 ' + p.pkg, amount: p.amount,
             deposit: Math.min(c.depositFixed, p.amount),
             account: '하나은행 756-910345-81707 (예금주: 엄대웅)',
@@ -2554,7 +2644,23 @@ class Component extends DCLogic {
         this.toast('사진을 올렸어요. "저장하고 홈페이지 보기"를 눌러 반영하세요');
       }).catch(err => { this.setState({ heroPhotoUploading: false }); this.toast(err.message || String(err), 'err'); });
     };
-    v.portfolioCards = (c.videos || []).map(vid => {
+    const VCATS = (Array.isArray(c.videoCats) && c.videoCats.length) ? c.videoCats : ['본식 하이라이트', '프리웨딩'];
+    const vidCat = vid => {
+      if (VCATS.includes(vid.cat)) return vid.cat;
+      const pre = VCATS.find(k => /프리웨딩/.test(k));
+      if (pre && /프리웨딩|pre-?wedding/i.test(vid.title || '')) return pre;   // 분류 미지정 + 제목에 '프리웨딩' → 프리웨딩
+      return VCATS[0];
+    };
+    const pfFilled = VCATS.filter(k => (c.videos || []).some(x => vidCat(x) === k));
+    const pfCur = pfFilled.includes(this.state.pfCat) ? this.state.pfCat : pfFilled[0];
+    v.showPfTabs = pfFilled.length > 1;
+    v.pfTabs = pfFilled.map(k => ({
+      label: k,
+      onClick: () => this.setState({ pfCat: k }),
+      style: 'padding:9px 16px;border-radius:999px;font-size:14px;font-weight:700;letter-spacing:-.02em;cursor:pointer;min-height:40px;font-family:inherit;' +
+        (k === pfCur ? 'border:1px solid #f2681c;background:#f2681c;color:#fff' : 'border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#e5e8eb')
+    }));
+    v.portfolioCards = (c.videos || []).filter(x => !v.showPfTabs || vidCat(x) === pfCur).map(vid => {
       const m = String(vid.url || '').match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
       const thumb = m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : TRANSPARENT_PX;
       return {
@@ -2580,10 +2686,14 @@ class Component extends DCLogic {
       if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 4) el.scrollTo({ left: 0, behavior: 'smooth' });
       else el.scrollBy({ left: amt, behavior: 'smooth' });
     };
-    const writeGal = next => this.setCfg('gallery', next);
+    const writeGal = (next, autoSave) => {
+      this.setState(st => ({ config: { ...st.config, gallery: next, heroPhoto: next.length ? st.config.heroPhoto : '' } }), () => {
+        if (autoSave && v.saveCms) v.saveCms(true);
+      });
+    };
     v.galleryRows = gal.map((g, i) => ({
       style: boxStyle(g, 12) + ';max-width:140px',
-      onRemove: () => writeGal(gal.filter((_, j) => j !== i)),
+      onRemove: () => writeGal(gal.filter((_, j) => j !== i), true),
       isFirst: i === 0, isLast: i === gal.length - 1,
       moveBtnStyle: 'width:24px;height:24px;border:0;border-radius:999px;background:rgba(25,31,40,.72);color:#fff;font-size:14px;font-weight:700;cursor:pointer;line-height:1',
       onMoveLeft: () => { if (i === 0) return; const next = gal.slice(); [next[i - 1], next[i]] = [next[i], next[i - 1]]; writeGal(next); },
@@ -2609,26 +2719,44 @@ class Component extends DCLogic {
         this.toast('스틸컷을 올렸어요. "저장하고 홈페이지 보기"를 눌러 반영하세요');
       }).catch(err => { this.setState({ galleryUploading: false }); this.toast(err.message || String(err), 'err'); });
     };
-    v.videoRows = c.videos.map((vid, i) => ({
-      title: vid.title, url: vid.url,
-      onTitle: e => this.setCfg('videos', c.videos.map((x, j) => j === i ? { ...x, title: e.target.value } : x)),
-      onUrl: e => this.setCfg('videos', c.videos.map((x, j) => j === i ? { ...x, url: e.target.value } : x)),
-      onRemove: () => this.setCfg('videos', c.videos.filter((_, j) => j !== i))
-    }));
-    v.addVideo = () => this.setCfg('videos', [...(c.videos || []), { title: '', url: '' }]);
+    const allVids = c.videos || [];
+    v.videoGroups = VCATS.map((k, gi) => {
+      const rows = allVids.map((vid, i) => ({ vid, i })).filter(o => vidCat(o.vid) === k).map(({ vid, i }) => ({
+        title: vid.title, url: vid.url,
+        onTitle: e => this.setCfg('videos', allVids.map((x, j) => j === i ? { ...x, title: e.target.value } : x)),
+        onUrl: e => this.setCfg('videos', allVids.map((x, j) => j === i ? { ...x, url: e.target.value } : x)),
+        cat: k, catOptions: VCATS.map(x => ({ value: x, label: x + '로 분류' })),
+        onCat: e => this.setCfg('videos', allVids.map((x, j) => j === i ? { ...x, cat: e.target.value } : x)),
+        onRemove: () => this.setCfg('videos', allVids.filter((_, j) => j !== i))
+      }));
+      return {
+        name: k, rows, count: rows.length + '개',
+        canRemove: rows.length === 0 && VCATS.length > 1,
+        onName: e => {
+          const nv = e.target.value;
+          this.setState(s => ({ config: { ...s.config,
+            videoCats: VCATS.map((x, j) => j === gi ? nv : x),
+            videos: (s.config.videos || []).map(x => vidCat(x) === k ? { ...x, cat: nv } : x) } }));
+        },
+        onAdd: () => this.setCfg('videos', [...allVids, { title: '', url: '', cat: k }]),
+        onRemoveCat: () => this.setCfg('videoCats', VCATS.filter((_, j) => j !== gi))
+      };
+    });
+    v.addVideoCat = () => this.setCfg('videoCats', [...VCATS, '새 분류']);
     v.packageRows = c.packages.map((p, i) => ({
       name: p.name, price: p.price, sns: p.sns,
       onName: e => this.setCfg('packages', c.packages.map((x, j) => j === i ? { ...x, name: e.target.value } : x)),
       onPrice: e => this.setCfg('packages', c.packages.map((x, j) => j === i ? { ...x, price: Number(e.target.value) || 0 } : x)),
       onSns: e => this.setCfg('packages', c.packages.map((x, j) => j === i ? { ...x, sns: Number(e.target.value) || 0 } : x))
     }));
-    v.saveCms = () => {
-      if (!this.sb || !s.authed) { this.toast('관리자 로그인이 필요해요', 'err'); return; }
-      const home = { heroKicker: c.heroKicker, heroTitle: c.heroTitle, heroSub: c.heroSub, heroPhoto: c.heroPhoto, heroPos: c.heroPos, gallery: c.gallery, eventBanner: c.eventBanner, eventBannerEnabled: c.eventBannerEnabled !== false, philosophy: c.philosophy, notice: c.notice, kakaoUrl: c.kakaoUrl, payAccount: c.payAccount, payHolder: c.payHolder, videos: c.videos, diffs: c.diffs, reviews: c.reviews, socialLinks: c.socialLinks };
+    v.saveCms = (quiet) => {
+      const s = this.state, c = s.config;
+      if (!this.sb || !s.authed) { if (quiet !== true) this.toast('관리자 로그인이 필요해요', 'err'); return; }
+      const home = { heroKicker: c.heroKicker, heroTitle: c.heroTitle, heroSub: c.heroSub, heroPhoto: c.heroPhoto, heroPos: c.heroPos, gallery: c.gallery, eventBanner: c.eventBanner, eventBannerEnabled: c.eventBannerEnabled !== false, philosophy: c.philosophy, notice: c.notice, kakaoUrl: c.kakaoUrl, payAccount: c.payAccount, payHolder: c.payHolder, videos: c.videos, videoCats: VCATS, diffs: c.diffs, reviews: c.reviews, socialLinks: c.socialLinks };
       const price = { depositFixed: c.depositFixed, monthlyLimit: c.monthlyLimit, peakMonths: c.peakMonths, packages: c.packages, options: c.options, travelZones: c.travelZones };
       const sid = s.studio && s.studio.id;
       Promise.all([this.sb.saveSetting('homepage', home, sid), this.sb.saveSetting('pricing', price, sid)])
-        .then(() => { this.toast('홈페이지에 반영되었어요'); this.setState({ appMode: 'home' }); })
+        .then(() => { if (quiet === true) this.toast('사진을 삭제하고 홈페이지에 반영했어요'); else { this.toast('홈페이지에 반영되었어요'); this.setState({ appMode: 'home' }); } })
         .catch(e => this.toast('저장 실패: ' + (e.message || e), 'err'));
     };
 
@@ -2647,6 +2775,7 @@ class Component extends DCLogic {
         r.bizType ? { k: '업태/종목', v: r.bizType } : null,
         r.contactName ? { k: '담당자', v: r.contactName } : null,
         r.contactPhone ? { k: '담당자 연락처', v: r.contactPhone } : null,
+        r.certUrl ? { k: '사업자등록증', v: r.certName || '첨부됨' } : null,
         r.email ? { k: '이메일', v: r.email } : null,
         at ? { k: '신청일시', v: `${at.getFullYear()}.${String(at.getMonth() + 1).padStart(2, '0')}.${String(at.getDate()).padStart(2, '0')} ${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}` } : null
       ].filter(Boolean);
@@ -2655,6 +2784,7 @@ class Component extends DCLogic {
       const done = !!p.receiptRequest.done;
       return {
         name: p.name, date: this.fmtDate(p.date), lines: rcLines(p.receiptRequest),
+        hasCert: !!p.receiptRequest.certUrl, certUrl: p.receiptRequest.certUrl || '',
         stateText: done ? '발급 완료' : '발급 대기',
         stateStyle: `padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:${done ? '#e9f9ee' : '#fff0e6'};color:${done ? '#1a8a4c' : '#c2410c'}`,
         toggleText: done ? '대기로 되돌리기' : '발급 완료 처리',
@@ -2666,6 +2796,7 @@ class Component extends DCLogic {
     v.receiptPending = v.receiptReqs.filter(r => r.stateText === '발급 대기').length;
     v.detail = dp ? {
       receiptLines: rcLines(dp.receiptRequest), hasReceipt: !!dp.receiptRequest,
+      receiptHasCert: !!(dp.receiptRequest && dp.receiptRequest.certUrl), receiptCertUrl: (dp.receiptRequest && dp.receiptRequest.certUrl) || '',
       open: true, groom: dp.groom || '', bride: dp.bride || '', venue: dp.venue === '미정' ? '' : (dp.venue || ''),
       dateVal: dp.date || '', timeVal: dp.time || '',
       phoneText: dp.phone, pkgText: dp.pkg,
@@ -2721,7 +2852,9 @@ class Component extends DCLogic {
       receiptInfo: dp.receiptRequest ? {
         title: `${dp.receiptRequest.doc === 'tax' ? '세금계산서' : dp.receiptRequest.purpose === 'biz' ? '사업자 현금영수증' : '개인 현금영수증'} 신청됨`,
         body: dp.receiptRequest.doc === 'tax'
-          ? `사업자등록번호: ${dp.receiptRequest.bizNo}\n상호: ${dp.receiptRequest.bizName}\n대표자: ${dp.receiptRequest.ceoName}\n소재지: ${dp.receiptRequest.bizAddr || '-'}\n업태/종목: ${dp.receiptRequest.bizType || '-'}\n담당자: ${dp.receiptRequest.contactName || '-'} (${dp.receiptRequest.contactPhone || '-'})\n수신 이메일: ${dp.receiptRequest.email}`
+          ? (dp.receiptRequest.certUrl
+            ? `사업자등록증 첨부됨 (아래 '사업자등록증 보기')\n수신 이메일: ${dp.receiptRequest.email || '-'}`
+            : `사업자등록번호: ${dp.receiptRequest.bizNo || '-'}\n상호: ${dp.receiptRequest.bizName || '-'}\n대표자: ${dp.receiptRequest.ceoName || '-'}\n소재지: ${dp.receiptRequest.bizAddr || '-'}\n업태/종목: ${dp.receiptRequest.bizType || '-'}\n담당자: ${dp.receiptRequest.contactName || '-'} (${dp.receiptRequest.contactPhone || '-'})\n수신 이메일: ${dp.receiptRequest.email || '-'}`)
           : dp.receiptRequest.purpose === 'biz' ? `사업자번호: ${dp.receiptRequest.bizNo}`
           : `휴대폰번호: ${dp.receiptRequest.phone}`
       } : null,
@@ -2798,51 +2931,88 @@ class Component extends DCLogic {
         if (node) { node.contentEditable = on ? 'true' : 'false'; node.style.outline = on ? '2px dashed #3182f6' : 'none'; node.style.outlineOffset = '-6px'; }
         this.setState({ contractEditing: on });
       },
-      onIssue: () => {
+      onIssue: async () => {
         const node = this._docRef.current;
         if (!node || !window.html2pdf) { this.toast('PDF 모듈을 불러오지 못했어요', 'err'); return; }
         this.toast('PDF를 만드는 중이에요…');
-        const prevT = node.style.transform, prevP = node.style.position, prevO = node.style.outline, prevE = node.contentEditable;
-        node.style.transform = 'none'; node.style.position = 'static'; node.style.outline = 'none'; node.contentEditable = 'false';
-        // 페이지 경계에 걸리는 블록을 다음 장으로 밀어 잘림 방지
-        const PAGE = 1123, PAD_T = 56, PAD_B = 56, spacers = [];
-        const blocks = [];
-        Array.from(node.children).forEach(el => {
-          if (el.querySelector('tr') && el.offsetHeight > PAGE / 3) el.querySelectorAll('tr').forEach(tr => blocks.push(tr));
-          else blocks.push(el);
-        });
-        const topOf = el => { const r = el.getBoundingClientRect(), n = node.getBoundingClientRect(); return r.top - n.top; };
-        blocks.forEach((el, i) => {
-          const top = topOf(el), h = el.getBoundingClientRect().height;
-          if (h > PAGE - PAD_T - PAD_B) return;
-          const page = Math.floor(top / PAGE);
-          const limit = (page + 1) * PAGE - PAD_B;
-          // 조항 제목은 다음 문단과 함께 넘김
-          const next = blocks[i + 1];
-          const keepWithNext = next && /^제\s?\d+\s?조|^\d+\.\s/.test((el.textContent || '').trim()) && el.tagName === 'DIV';
-          const bottom = keepWithNext ? top + h + Math.min(next.getBoundingClientRect().height, 60) : top + h;
-          if (bottom > limit) {
-            const push = (page + 1) * PAGE + PAD_T - top;
-            const sp = document.createElement(el.tagName === 'TR' ? 'tr' : 'div');
-            if (el.tagName === 'TR') { const td = document.createElement('td'); td.colSpan = 9; td.style.cssText = `height:${push}px;padding:0;border:0`; sp.appendChild(td); }
-            else sp.style.cssText = `height:${push}px;margin:0;padding:0`;
-            sp.setAttribute('data-pdf-spacer', '1');
-            el.parentNode.insertBefore(sp, el);
-            spacers.push(sp);
+        const prevT = node.style.transform, prevO = node.style.outline, prevE = node.contentEditable, prevP = node.style.position;
+        node.style.transform = 'none'; node.style.outline = 'none'; node.contentEditable = 'false'; node.style.position = 'static';
+        const restore = () => { node.style.transform = prevT; node.style.outline = prevO; node.contentEditable = prevE; node.style.position = prevP; };
+        const fname = `${this.brand()}_본식계약서_${cd.clientName}_${cd.y}${String(cd.m).padStart(2, '0')}${String(cd.d).padStart(2, '0')}.pdf`;
+        try {
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const W = node.offsetWidth || 794;
+          const S = (node.getBoundingClientRect().width / W) || 1;
+          const nTop = node.getBoundingClientRect().top;
+          // 1) 줄 단위 블록 위치 수집 (문단·표의 행·서명란)
+          const isBlock = el => { const d = getComputedStyle(el).display; return d !== 'inline' && d !== 'inline-block' && d !== 'contents' && d !== 'none' && el.tagName !== 'BR'; };
+          const spans = [];
+          const add = el => { const r = el.getBoundingClientRect(); if (r.height > 0) spans.push({ top: (r.top - nTop) / S, bot: (r.bottom - nTop) / S, el }); };
+          const walk = el => Array.from(el.children).forEach(ch => {
+            const tg = ch.tagName;
+            if (tg === 'TABLE' || tg === 'TBODY' || tg === 'THEAD') { walk(ch); return; }
+            if (tg === 'TR') { add(ch); return; }
+            if (!isBlock(ch)) return;
+            const sig = /공급자 \(업체\)/.test(ch.textContent || '') && /공유자 \(고객\)/.test(ch.textContent || '');
+            const kids = Array.from(ch.children).some(isBlock);
+            if (kids && !sig && ch.getBoundingClientRect().height / S > 90) walk(ch); else add(ch);
+          });
+          walk(node);
+          spans.sort((x, y) => x.top - y.top);
+          // 조항 제목(제 N 조 / 1. 2. 3. 섹션 제목)은 다음 줄과 한 덩어리로
+          const isHead = sp => { const t = (sp.el.textContent || '').trim(); return t.length < 40 && (/^제\s?\d+\s?조/.test(t) || /^\d\.\s/.test(t)) && sp.el.tagName === 'DIV'; };
+          // 2) 전체를 한 번에 캔버스로 렌더
+          const canvas = await window.html2pdf().set({ html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 } }).from(node).toCanvas().get('canvas');
+          const k = canvas.width / W;
+          const totalH = canvas.height / k;
+          const PAGE = W * 1123 / 794, PAD_T = 56, PAD_B = 48;
+          // 3) 페이지 경계 계산 — 어떤 줄도 가로지르지 않는 위치에서만 자름
+          const cuts = [];
+          let y0 = 0, first = true;
+          while (y0 < totalH - 1) {
+            const room = PAGE - (first ? 0 : PAD_T) - PAD_B;
+            let end = y0 + room;
+            if (end >= totalH) { cuts.push([y0, totalH]); break; }
+            let cut = end;
+            for (let i = 0; i < spans.length; i++) {
+              const sp = spans[i];
+              if (sp.top < end && sp.bot > end && sp.top > y0 + 1) { cut = Math.min(cut, sp.top); }
+            }
+            // 제목만 페이지 끝에 남으면 제목부터 다음 장으로
+            for (let i = 0; i < spans.length; i++) {
+              const sp = spans[i];
+              if (isHead(sp) && sp.top >= y0 && sp.top < cut && sp.bot > cut - 70 && sp.top > y0 + 1) cut = Math.min(cut, sp.top);
+            }
+            cut = Math.max(cut - 2, y0 + 40);
+            cuts.push([y0, cut]);
+            y0 = cut; first = false;
           }
-        });
-        const total = Math.ceil(node.scrollHeight / PAGE) * PAGE;
-        const prevH = node.style.minHeight; node.style.minHeight = total + 'px';
-        const restore = () => { spacers.forEach(sp => sp.remove()); node.style.minHeight = prevH; node.style.transform = prevT; node.style.position = prevP; node.style.outline = prevO; node.contentEditable = prevE; };
-        window.html2pdf().set({
-          margin: 0,
-          filename: `${this.brand()}_본식계약서_${cd.clientName}_${cd.y}${String(cd.m).padStart(2, '0')}${String(cd.d).padStart(2, '0')}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-          jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait', hotfixes: ['px_scaling'] },
-          pagebreak: { mode: [] }
-        }).from(node).save().then(() => { restore(); this.toast('계약서 PDF를 저장했어요'); })
-          .catch(() => { restore(); this.toast('PDF 생성에 실패했어요', 'err'); });
+          // 4) 페이지별 이미지 만들기
+          const pw = Math.round(W * k), ph = Math.round(PAGE * k);
+          const pages = cuts.map(([s, e], i) => {
+            const c = document.createElement('canvas'); c.width = pw; c.height = ph;
+            const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, pw, ph);
+            const sy = Math.round(s * k), sh = Math.min(Math.round((e - s) * k), canvas.height - sy);
+            const dy = i === 0 ? 0 : Math.round(PAD_T * k);
+            if (sh > 0) g.drawImage(canvas, 0, sy, pw, sh, 0, dy, pw, sh);
+            return c;
+          });
+          // 5) PDF로 묶기
+          const pdf = await window.html2pdf().set({ margin: 0, image: { type: 'jpeg', quality: 0.98 }, jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait', hotfixes: ['px_scaling'] } }).from(pages[0], 'canvas').toPdf().get('pdf');
+          const nPages = pdf.internal.getNumberOfPages();
+          for (let p = nPages; p > 1; p--) pdf.deletePage(p);
+          for (let i = 1; i < pages.length; i++) {
+            pdf.addPage([794, 1123], 'portrait');
+            pdf.addImage(pages[i].toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, 794, 1123);
+          }
+          pdf.save(fname);
+          restore();
+          this.toast('계약서 PDF를 저장했어요');
+        } catch (err) {
+          restore();
+          console.error(err);
+          this.toast('PDF 생성에 실패했어요', 'err');
+        }
       },
       signText: cd.signed ? `(인) ${ceo}` : '(서명 또는 인)',
       signStyle: `margin-top:16px;padding-bottom:4px;border-bottom:1px solid ${cd.signed ? this.BLUE : '#d1d6db'};font-size:${cd.signed ? '13px' : '11.5px'};font-weight:${cd.signed ? 700 : 500};color:${cd.signed ? this.BLUE : '#b0b8c1'}`,

@@ -345,6 +345,27 @@ export async function uploadClientFile(file, name, phone, slug) {
   return url;
 }
 
+export async function uploadReceiptDoc(file, slug) {
+  // 세금계산서용 사업자등록증 — 저장소에만 올리고 URL을 신청서(receipt_request)에 담는다
+  const safe = file.name.replace(/[^\w.\-]/g, '_');
+  const path = `${(slug || currentSlug())}/receipt/${Date.now()}_${safe}`;
+  const res = await fetch(`${SB_URL}/storage/v1/object/client-files/${encodeURI(path)}`, {
+    method: 'POST',
+    headers: {
+      apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'x-upsert': 'true',
+      'Content-Type': file.type || 'application/octet-stream'
+    },
+    body: file
+  });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error(SETUP_MSG);
+    let detail = '';
+    try { detail = (await res.json()).message || ''; } catch (e) {}
+    throw new Error('업로드 실패' + (detail ? ': ' + detail : ' (' + res.status + ')'));
+  }
+  return `${SB_URL}/storage/v1/object/public/client-files/${encodeURI(path)}`;
+}
+
 export async function submitReceipt(name, phone, reqBody, slug) {
   let ok;
   try {
